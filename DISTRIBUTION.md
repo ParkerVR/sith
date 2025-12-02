@@ -34,6 +34,7 @@ python3 -m venv venv
 ```bash
 rm -rf build dist
 ./venv/bin/python setup.py py2app
+codesign --force --deep --sign - dist/Sith.app  # Required for app to launch
 ```
 
 The app will be in `dist/Sith.app`
@@ -85,7 +86,14 @@ rm -rf build dist
 The unsigned app will be in `dist/Sith.app` (~43MB)
 
 ### Step 3: Test the Build
+
+**Important:** macOS requires all apps to be code-signed, even for local testing. Add an ad-hoc signature:
+
 ```bash
+# Add ad-hoc signature for local testing
+codesign --force --deep --sign - dist/Sith.app
+
+# Now test the app
 dist/Sith.app/Contents/MacOS/Sith
 ```
 
