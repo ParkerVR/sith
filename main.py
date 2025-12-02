@@ -147,6 +147,11 @@ class SithWindow(NSObject):
         self.window.setBackgroundColor_(NSColor.clearColor())
         self.window.setMovableByWindowBackground_(True)
 
+        # Add rounded corners (Apple standard)
+        self.window.contentView().setWantsLayer_(True)
+        self.window.contentView().layer().setCornerRadius_(10.0)
+        self.window.contentView().layer().setMasksToBounds_(True)
+
         # Add glass effect view
         effect_view = NSVisualEffectView.alloc().initWithFrame_(
             self.window.contentView().bounds()
