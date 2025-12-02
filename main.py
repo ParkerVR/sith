@@ -48,9 +48,8 @@ class FrontAppWindow:
         self.root = tk.Tk()
         self.root.title("Front App")
 
-        # Optional: small, always-on-top window in the corner
+        # Always on top for HUD-style behavior
         self.root.attributes("-topmost", True)
-        # self.root.overrideredirect(True)  # uncomment to hide title bar
 
         w, h = 260, 60
         screen_w = self.root.winfo_screenwidth()
@@ -67,7 +66,6 @@ class FrontAppWindow:
         )
         self.label.pack(expand=True, fill="both")
 
-        # Kick off periodic updates
         self.update_front_app()
 
     def update_front_app(self):
@@ -75,9 +73,20 @@ class FrontAppWindow:
         if app_name is None:
             app_name = "(unknown)"
 
+        # Update text
         self.label.config(text=app_name)
 
-        # Call again in 1000 ms (1 second)
+        # Determine allowed vs blocked
+        if app_name in ALLOWLIST:
+            bg = "#1fba2f"  # blue for allowed
+        else:
+            bg = "#aa0000"  # red for everything else
+
+        # Apply background colors
+        self.root.configure(bg=bg)
+        self.label.configure(bg=bg)
+
+        # Poll again in 1 second
         self.root.after(1000, self.update_front_app)
 
     def run(self):
