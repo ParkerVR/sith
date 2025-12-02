@@ -34,6 +34,9 @@ def create_summary_window(summary_data, today_key):
     summary_window.setLevel_(NSFloatingWindowLevel)
     summary_window.setBackgroundColor_(NSColor.colorWithCalibratedWhite_alpha_(0.2, 0.95))
 
+    # Accessibility
+    summary_window.setAccessibilityHelp_("Summary of work time tracked by day and application")
+
     # Add glass effect
     add_glass_effect(summary_window)
 

@@ -193,6 +193,10 @@ class SithWindow(NSObject):
         self.window.setBackgroundColor_(NSColor.clearColor())
         self.window.setMovableByWindowBackground_(True)
 
+        # Accessibility
+        self.window.setAccessibilityTitle_("Work Clock Timer")
+        self.window.setAccessibilityHelp_("Floating timer window showing work time tracking")
+
         # Add rounded corners (Apple standard)
         self.window.contentView().setWantsLayer_(True)
         self.window.contentView().layer().setCornerRadius_(10.0)
@@ -233,6 +237,7 @@ class SithWindow(NSObject):
             "Show Work Summary", "toggleSummary:", ""
         )
         self.summary_menu_item.setTarget_(self)
+        self.summary_menu_item.setAccessibilityHelp_("Open window showing work time breakdown by day and app")
         self.menu.addItem_(self.summary_menu_item)
 
         # Settings menu item (toggle)
@@ -240,6 +245,7 @@ class SithWindow(NSObject):
             "Settings", "toggleSettings:", ""
         )
         self.settings_menu_item.setTarget_(self)
+        self.settings_menu_item.setAccessibilityHelp_("Configure app allowlist, colors, and behavior")
         self.menu.addItem_(self.settings_menu_item)
 
         # Guide menu item (toggle)
@@ -247,6 +253,7 @@ class SithWindow(NSObject):
             "Guide", "toggleGuide:", ""
         )
         self.guide_menu_item.setTarget_(self)
+        self.guide_menu_item.setAccessibilityHelp_("View user guide and documentation")
         self.menu.addItem_(self.guide_menu_item)
 
         # Reset Timer menu item
@@ -254,6 +261,7 @@ class SithWindow(NSObject):
             "Reset Timer", "resetTimer:", ""
         )
         reset_item.setTarget_(self)
+        reset_item.setAccessibilityHelp_("Reset work time counter to zero for current session")
         self.menu.addItem_(reset_item)
 
         # Separator
@@ -264,6 +272,7 @@ class SithWindow(NSObject):
             "Minimize to Status Bar", "minimizeToStatusBar:", ""
         )
         minimize_item.setTarget_(self)
+        minimize_item.setAccessibilityHelp_("Hide window and show status bar icon only")
         self.menu.addItem_(minimize_item)
 
         # Separator
@@ -274,6 +283,7 @@ class SithWindow(NSObject):
             "Quit", "quitApp:", "q"
         )
         quit_item.setTarget_(self)
+        quit_item.setAccessibilityHelp_("Quit the Work Clock application")
         self.menu.addItem_(quit_item)
 
         # Enable right-click on content view
@@ -323,6 +333,9 @@ class SithWindow(NSObject):
         # Also set the cell alignment to ensure it's centered
         if self.timer_label.cell():
             self.timer_label.cell().setAlignment_(NSTextAlignmentCenter)
+        # Accessibility
+        self.timer_label.setAccessibilityLabel_("Work time")
+        self.timer_label.setAccessibilityHelp_("Total time worked in current session")
         content_view.addSubview_(self.timer_label)
 
         # App label (bottom left, small)
@@ -337,6 +350,9 @@ class SithWindow(NSObject):
         self.app_label.setEditable_(False)
         self.app_label.setSelectable_(False)
         self.app_label.setWantsLayer_(True)  # Enable layer for smooth animations
+        # Accessibility
+        self.app_label.setAccessibilityLabel_("Current application")
+        self.app_label.setAccessibilityHelp_("Name of the currently active application")
         content_view.addSubview_(self.app_label)
 
         # Status label (bottom right, small)
@@ -352,6 +368,9 @@ class SithWindow(NSObject):
         self.status_label.setSelectable_(False)
         self.status_label.setAlignment_(NSTextAlignmentRight)
         self.status_label.setWantsLayer_(True)  # Enable layer for smooth animations
+        # Accessibility
+        self.status_label.setAccessibilityLabel_("Work status")
+        self.status_label.setAccessibilityHelp_("Indicates whether actively tracking work time or idle")
         content_view.addSubview_(self.status_label)
 
     def updateTimer_(self, timer):
@@ -516,6 +535,11 @@ class SithWindow(NSObject):
         # Set status bar icon (use a simple text icon)
         self.status_item.setTitle_("⏱")
 
+        # Accessibility
+        if self.status_item.button():
+            self.status_item.button().setAccessibilityLabel_("Work Clock")
+            self.status_item.button().setAccessibilityHelp_("Work time tracking app. Click to show menu.")
+
         # Create menu for status bar item
         status_menu = NSMenu.alloc().init()
 
@@ -524,6 +548,7 @@ class SithWindow(NSObject):
             "Show Window", "toggleWindowVisibility:", ""
         )
         show_item.setTarget_(self)
+        show_item.setAccessibilityHelp_("Show the main timer window")
         status_menu.addItem_(show_item)
 
         # Separator
@@ -534,6 +559,7 @@ class SithWindow(NSObject):
             "Quit", "quitApp:", "q"
         )
         quit_item.setTarget_(self)
+        quit_item.setAccessibilityHelp_("Quit the Work Clock application")
         status_menu.addItem_(quit_item)
 
         self.status_item.setMenu_(status_menu)
@@ -649,6 +675,9 @@ class SithWindow(NSObject):
         guide_window.setTitle_("Sith Guide")
         guide_window.setLevel_(NSFloatingWindowLevel)
         guide_window.setBackgroundColor_(NSColor.colorWithCalibratedWhite_alpha_(0.2, 0.95))
+
+        # Accessibility
+        guide_window.setAccessibilityHelp_("User guide and instructions for using the Work Clock app")
 
         # Add glass effect
         from display_utils import add_glass_effect

@@ -67,6 +67,9 @@ class SettingsController(NSObject):
         self.window.setLevel_(NSFloatingWindowLevel)
         self.window.setBackgroundColor_(NSColor.colorWithCalibratedWhite_alpha_(0.2, 0.95))
 
+        # Accessibility
+        self.window.setAccessibilityHelp_("Configure Work Clock settings including colors, fonts, and tracked applications")
+
         # Add glass effect
         add_glass_effect(self.window)
 
@@ -130,6 +133,9 @@ class SettingsController(NSObject):
         active_color_well.setColor_(active_color)
         active_color_well.setTarget_(self)
         active_color_well.setAction_("activeColorChanged:")
+        # Accessibility
+        active_color_well.setAccessibilityLabel_("Active text color picker")
+        active_color_well.setAccessibilityHelp_("Choose the color displayed when actively tracking work time")
         self.content_view.addSubview_(active_color_well)
         self.widgets['active_color'] = active_color_well
 
@@ -144,6 +150,9 @@ class SettingsController(NSObject):
         idle_color_well.setColor_(idle_color)
         idle_color_well.setTarget_(self)
         idle_color_well.setAction_("idleColorChanged:")
+        # Accessibility
+        idle_color_well.setAccessibilityLabel_("Idle text color picker")
+        idle_color_well.setAccessibilityHelp_("Choose the color displayed when idle or using non-tracked apps")
         self.content_view.addSubview_(idle_color_well)
         self.widgets['idle_color'] = idle_color_well
 
@@ -156,6 +165,9 @@ class SettingsController(NSObject):
         idle_field = create_text_field(str(self.config.get("idle_threshold", 2)), 180, y_position, 60, 22, font_family=font_family)
         idle_field.setTarget_(self)
         idle_field.setAction_("idleTimeoutChanged:")
+        # Accessibility
+        idle_field.setAccessibilityLabel_("Idle timeout value")
+        idle_field.setAccessibilityHelp_("Number of time units before being marked as idle")
         self.content_view.addSubview_(idle_field)
         self.widgets['idle_field'] = idle_field
 
@@ -167,6 +179,9 @@ class SettingsController(NSObject):
         unit_popup.selectItemAtIndex_(0)
         unit_popup.setTarget_(self)
         unit_popup.setAction_("idleTimeoutChanged:")
+        # Accessibility
+        unit_popup.setAccessibilityLabel_("Idle timeout unit")
+        unit_popup.setAccessibilityHelp_("Time unit for idle threshold: seconds, minutes, or hours")
         self.content_view.addSubview_(unit_popup)
         self.widgets['unit_popup'] = unit_popup
 
@@ -180,6 +195,8 @@ class SettingsController(NSObject):
         anim_checkbox.setFont_(get_font(font_family, 10, bold=False))
         anim_checkbox.setTarget_(self)
         anim_checkbox.setAction_("colorAnimationChanged:")
+        # Accessibility
+        anim_checkbox.setAccessibilityHelp_("Smoothly animate color transitions between active and idle states")
         self.content_view.addSubview_(anim_checkbox)
         self.widgets['color_animation'] = anim_checkbox
 
@@ -201,6 +218,9 @@ class SettingsController(NSObject):
 
         time_style_popup.setTarget_(self)
         time_style_popup.setAction_("timeStyleChanged:")
+        # Accessibility
+        time_style_popup.setAccessibilityLabel_("Time display format")
+        time_style_popup.setAccessibilityHelp_("Choose how work time is displayed in the timer")
         self.content_view.addSubview_(time_style_popup)
         self.widgets['time_style'] = time_style_popup
 
@@ -222,6 +242,9 @@ class SettingsController(NSObject):
 
         font_popup.setTarget_(self)
         font_popup.setAction_("fontFamilyChanged:")
+        # Accessibility
+        font_popup.setAccessibilityLabel_("Font family")
+        font_popup.setAccessibilityHelp_("Choose the font style for the app interface")
         self.content_view.addSubview_(font_popup)
         self.widgets['font_family'] = font_popup
 
@@ -266,6 +289,8 @@ class SettingsController(NSObject):
             remove_btn.setTag_(i)  # Store index as tag
             remove_btn.setTarget_(self)
             remove_btn.setAction_("removeApp:")
+            # Accessibility - hint only, no label (Apple standard for "-" buttons)
+            remove_btn.setAccessibilityHelp_(f"Remove {app_name} from allowlist")
             self.content_view.addSubview_(remove_btn)
 
             y_position += 22
@@ -293,6 +318,8 @@ class SettingsController(NSObject):
             add_btn.setFont_(get_font(font_family, 9, bold=False))
             add_btn.setTarget_(self)
             add_btn.setAction_("addApp:")
+            # Accessibility
+            add_btn.setAccessibilityHelp_(f"Add {app_name} to work tracking allowlist")
             self.content_view.addSubview_(add_btn)
             x_pos += 110
 
@@ -305,6 +332,8 @@ class SettingsController(NSObject):
         reset_btn.setFont_(get_font(font_family, 11, bold=False))
         reset_btn.setTarget_(self)
         reset_btn.setAction_("resetToDefault:")
+        # Accessibility
+        reset_btn.setAccessibilityHelp_("Restore all settings to their default values")
         self.content_view.addSubview_(reset_btn)
 
         y_position += 32 + 10  # After button + spacing
@@ -316,6 +345,8 @@ class SettingsController(NSObject):
         open_dir_btn.setFont_(get_font(font_family, 11, bold=False))
         open_dir_btn.setTarget_(self)
         open_dir_btn.setAction_("openAppDirectory:")
+        # Accessibility
+        open_dir_btn.setAccessibilityHelp_("Open the application data directory in Finder to view configuration files")
         self.content_view.addSubview_(open_dir_btn)
 
         # Return final y position (after button height)
