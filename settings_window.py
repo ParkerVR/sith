@@ -169,7 +169,20 @@ class SettingsController(NSObject):
         self.content_view.addSubview_(unit_popup)
         self.widgets['unit_popup'] = unit_popup
 
-        y_position += 50
+        y_position += 40
+
+        # Color animation checkbox
+        anim_checkbox = NSButton.alloc().initWithFrame_(NSMakeRect(20, y_position, 340, 20))
+        anim_checkbox.setButtonType_(3)  # Switch/checkbox type
+        anim_checkbox.setTitle_("Enable color fade animation")
+        anim_checkbox.setState_(1 if self.config.get("enable_color_animation", True) else 0)
+        anim_checkbox.setFont_(NSFont.fontWithName_size_("Menlo", 10))
+        anim_checkbox.setTarget_(self)
+        anim_checkbox.setAction_("colorAnimationChanged:")
+        self.content_view.addSubview_(anim_checkbox)
+        self.widgets['color_animation'] = anim_checkbox
+
+        y_position += 40
 
         # Allowlist section
         self.allowlist_y_start = y_position
@@ -310,6 +323,15 @@ class SettingsController(NSObject):
             self.saveConfig()
         except ValueError:
             pass  # Invalid input, ignore
+
+    @objc.IBAction
+    def colorAnimationChanged_(self, sender):
+        """Handle color animation checkbox change."""
+        enabled = sender.state() == 1
+        self.config["enable_color_animation"] = enabled
+
+        # Save to file
+        self.saveConfig()
 
     @objc.IBAction
     def addApp_(self, sender):

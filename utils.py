@@ -25,6 +25,7 @@ DEFAULT_CONFIG = {
         "Safari"
     ],
     "idle_threshold": 2,
+    "enable_color_animation": True,
     "colors": {
         "working": "#0077ff",
         "inactive": "#aa0000",

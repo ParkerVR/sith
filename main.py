@@ -22,6 +22,7 @@ from Cocoa import (
     NSMenuItem,
     NSTimer,
     NSMakeRect,
+    NSAnimationContext,
     NSRightMouseDown,
     NSLeftMouseDown,
     NSLeftMouseDragged,
@@ -33,6 +34,7 @@ from Cocoa import (
     NSTextAlignmentCenter,
     NSTextAlignmentRight,
     NSTextView,
+    NSCalibratedRGBColorSpace,
     NSScrollView,
     NSMakeSize,
     NSColorWell,
@@ -42,7 +44,7 @@ from Cocoa import (
     NSBezelBorder,
     NSPopUpButton,
 )
-from Foundation import NSObject, NSMutableArray, NSProcessInfo
+from Foundation import NSObject, NSMutableArray, NSProcessInfo, NSDate
 import objc
 import setproctitle
 import json
@@ -98,6 +100,18 @@ class SithWindow(NSObject):
         self.current_app = None
         self.summary = load_summary()
         self.today = today_key()
+
+        # Color animation state
+        self.previous_text_color = None
+        self.color_anim_timer = None
+        self.color_anim_start_time = 0.0
+        self.color_anim_duration = 0.3  # seconds (quicker animation)
+        self.color_anim_from = None
+        self.color_anim_to = None
+
+        # Load color animation setting from config
+        config_data = load_config()
+        self.color_animation_enabled = config_data.get("enable_color_animation", True)
 
         # Drag state
         self.drag_offset = None
@@ -236,6 +250,7 @@ class SithWindow(NSObject):
         self.timer_label.setEditable_(False)
         self.timer_label.setSelectable_(False)
         self.timer_label.setAlignment_(NSTextAlignmentCenter)
+        self.timer_label.setWantsLayer_(True)  # Enable layer for smooth animations
         # Also set the cell alignment to ensure it's centered
         if self.timer_label.cell():
             self.timer_label.cell().setAlignment_(NSTextAlignmentCenter)
@@ -252,6 +267,7 @@ class SithWindow(NSObject):
         self.app_label.setDrawsBackground_(False)
         self.app_label.setEditable_(False)
         self.app_label.setSelectable_(False)
+        self.app_label.setWantsLayer_(True)  # Enable layer for smooth animations
         content_view.addSubview_(self.app_label)
 
         # Status label (bottom right, small)
@@ -266,6 +282,7 @@ class SithWindow(NSObject):
         self.status_label.setEditable_(False)
         self.status_label.setSelectable_(False)
         self.status_label.setAlignment_(NSTextAlignmentRight)
+        self.status_label.setWantsLayer_(True)  # Enable layer for smooth animations
         content_view.addSubview_(self.status_label)
 
     def updateTimer_(self, timer):
@@ -305,11 +322,107 @@ class SithWindow(NSObject):
         )
 
         self.timer_label.setStringValue_(format_seconds(self.worked_seconds))
-        self.timer_label.setTextColor_(text_color)
         self.app_label.setStringValue_(app_name)
-        self.app_label.setTextColor_(text_color)
         self.status_label.setStringValue_(status_text)
-        self.status_label.setTextColor_(text_color)
+
+        # Only animate color transitions when color actually changes
+        color_changed = (self.previous_text_color is None or
+                        text_color != self.previous_text_color)
+
+        if color_changed:
+            # Check if color animation is enabled
+            if self.color_animation_enabled:
+                # Animate color transitions with manual RGB interpolation
+                self._start_text_color_animation(text_color)
+            else:
+                # No animation, instant color change
+                self.timer_label.setTextColor_(text_color)
+                self.app_label.setTextColor_(text_color)
+                self.status_label.setTextColor_(text_color)
+                self.previous_text_color = text_color
+        else:
+            # No color change needed
+            self.timer_label.setTextColor_(text_color)
+            self.app_label.setTextColor_(text_color)
+            self.status_label.setTextColor_(text_color)
+
+    def _color_to_rgba(self, color):
+        """Convert NSColor to an (r, g, b, a) tuple in calibrated RGB space."""
+        if color is None:
+            return (1.0, 1.0, 1.0, 1.0)  # default white
+
+        c = color.colorUsingColorSpaceName_(NSCalibratedRGBColorSpace)
+        if c is None:
+            return (1.0, 1.0, 1.0, 1.0)
+
+        return (
+            c.redComponent(),
+            c.greenComponent(),
+            c.blueComponent(),
+            c.alphaComponent(),
+        )
+
+    def _rgba_lerp(self, rgba_from, rgba_to, t):
+        """Linear interpolation between two RGBA tuples."""
+        return tuple(
+            f + (t * (tgt - f)) for f, tgt in zip(rgba_from, rgba_to)
+        )
+
+    def _start_text_color_animation(self, new_color):
+        """Start a smooth color animation to new_color."""
+        # Cancel any previous animation
+        if self.color_anim_timer is not None:
+            self.color_anim_timer.invalidate()
+            self.color_anim_timer = None
+
+        # Determine starting color: previous, or current label color
+        if self.previous_text_color is not None:
+            from_color = self.previous_text_color
+        else:
+            from_color = self.timer_label.textColor()  # current actual color
+
+        self.color_anim_from = self._color_to_rgba(from_color)
+        self.color_anim_to = self._color_to_rgba(new_color)
+        self.color_anim_start_time = NSDate.timeIntervalSinceReferenceDate()
+
+        # Set previous_text_color immediately to the final target
+        self.previous_text_color = new_color
+
+        # 30 FPS animation
+        self.color_anim_timer = NSTimer.scheduledTimerWithTimeInterval_target_selector_userInfo_repeats_(
+            1.0 / 30.0,
+            self,
+            "stepColorAnimation:",
+            None,
+            True,
+        )
+
+    def stepColorAnimation_(self, timer):
+        """Step function for color animation - interpolates RGB values."""
+        now = NSDate.timeIntervalSinceReferenceDate()
+        elapsed = now - self.color_anim_start_time
+        t = elapsed / self.color_anim_duration
+
+        if t >= 1.0:
+            t = 1.0
+
+        rgba = self._rgba_lerp(self.color_anim_from, self.color_anim_to, t)
+        r, g, b, a = rgba
+
+        blended = NSColor.colorWithCalibratedRed_green_blue_alpha_(r, g, b, a)
+
+        self.timer_label.setTextColor_(blended)
+        self.app_label.setTextColor_(blended)
+        self.status_label.setTextColor_(blended)
+
+        if t >= 1.0:
+            # Done, snap to final and clean up
+            self.color_anim_timer.invalidate()
+            self.color_anim_timer = None
+            # Ensure exact final color
+            self.timer_label.setTextColor_(self.previous_text_color)
+            self.app_label.setTextColor_(self.previous_text_color)
+            self.status_label.setTextColor_(self.previous_text_color)
 
 
     def quitApp_(self, sender):
@@ -434,10 +547,14 @@ class SithWindow(NSObject):
 
         # Reload config from file
         config = get_config()
+        config_data = load_config()
         ALLOWLIST = config.ALLOWLIST
         IDLE_THRESHOLD = config.IDLE_THRESHOLD
         GLASS_WORKING_COLOR = config.GLASS_WORKING_COLOR
         GLASS_INACTIVE_COLOR = config.GLASS_INACTIVE_COLOR
+
+        # Reload color animation setting
+        self.color_animation_enabled = config_data.get("enable_color_animation", True)
 
         # Schedule label update on next timer tick instead of blocking here
         # (update_labels will be called in the next timer cycle automatically)
