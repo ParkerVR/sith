@@ -28,7 +28,10 @@ DEFAULT_CONFIG = {
         "working": "#0077ff",
         "inactive": "#aa0000",
         "text": "#ffffff",
+        # Glass colors with better contrast for readability
+        # Bright cyan for active state - high contrast on dark glass
         "glass_working": "#00d4ff",
+        # White for idle state - ensures readability
         "glass_inactive": "#ffffff"
     },
     "window": {

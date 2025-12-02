@@ -78,12 +78,21 @@ def get_font(font_family, size, bold=False):
             return NSFont.systemFontOfSize_(size)
 
 
-def create_label(text, x, y, w, h, bold=False, font_size=11, font_family="SF Pro"):
-    """Create a standard label with common settings."""
+def create_label(text, x, y, w, h, bold=False, font_size=11, font_family="SF Pro", use_semantic_color=True):
+    """Create a standard label with common settings.
+
+    Args:
+        use_semantic_color: If True, uses NSColor.labelColor() which adapts to appearance.
+                          If False, uses white (for custom styled labels).
+    """
     label = NSTextField.alloc().initWithFrame_(NSMakeRect(x, y, w, h))
     label.setStringValue_(text)
     label.setFont_(get_font(font_family, font_size, bold))
-    label.setTextColor_(NSColor.whiteColor())
+    # Use semantic color for UI labels (adapts to light/dark mode)
+    if use_semantic_color:
+        label.setTextColor_(NSColor.labelColor())
+    else:
+        label.setTextColor_(NSColor.whiteColor())
     label.setBackgroundColor_(NSColor.clearColor())
     label.setBezeled_(False)
     label.setDrawsBackground_(False)
@@ -93,11 +102,12 @@ def create_label(text, x, y, w, h, bold=False, font_size=11, font_family="SF Pro
 
 
 def create_text_field(value, x, y, w, h, font_size=12, font_family="SF Pro"):
-    """Create a text input field with dark background and white text."""
+    """Create a text input field with semantic colors."""
     field = NSTextField.alloc().initWithFrame_(NSMakeRect(x, y, w, h))
     field.setStringValue_(value)
     field.setFont_(get_font(font_family, font_size, False))
-    field.setTextColor_(NSColor.whiteColor())
-    field.setBackgroundColor_(NSColor.colorWithCalibratedWhite_alpha_(0.2, 0.8))
+    # Use semantic colors that adapt to appearance
+    field.setTextColor_(NSColor.labelColor())
+    field.setBackgroundColor_(NSColor.controlBackgroundColor())
     field.setDrawsBackground_(True)
     return field

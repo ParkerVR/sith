@@ -65,7 +65,8 @@ class SettingsController(NSObject):
         # Configure window
         self.window.setTitle_("Settings")
         self.window.setLevel_(NSFloatingWindowLevel)
-        self.window.setBackgroundColor_(NSColor.colorWithCalibratedWhite_alpha_(0.2, 0.95))
+        # Use system background color with transparency for proper appearance adaptation
+        self.window.setBackgroundColor_(NSColor.windowBackgroundColor().colorWithAlphaComponent_(0.95))
 
         # Accessibility
         self.window.setAccessibilityHelp_("Configure Work Clock settings including colors, fonts, and tracked applications")

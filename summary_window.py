@@ -32,7 +32,8 @@ def create_summary_window(summary_data, today_key):
     # Configure window
     summary_window.setTitle_("Work Summary")
     summary_window.setLevel_(NSFloatingWindowLevel)
-    summary_window.setBackgroundColor_(NSColor.colorWithCalibratedWhite_alpha_(0.2, 0.95))
+    # Use system background color with transparency for proper appearance adaptation
+    summary_window.setBackgroundColor_(NSColor.windowBackgroundColor().colorWithAlphaComponent_(0.95))
 
     # Accessibility
     summary_window.setAccessibilityHelp_("Summary of work time tracked by day and application")
@@ -57,7 +58,8 @@ def create_summary_window(summary_data, today_key):
     text_view.setEditable_(False)
     text_view.setSelectable_(True)
     text_view.setBackgroundColor_(NSColor.clearColor())
-    text_view.setTextColor_(NSColor.whiteColor())
+    # Use semantic color that adapts to light/dark mode
+    text_view.setTextColor_(NSColor.labelColor())
     text_view.setFont_(get_font(font_family, 10, bold=False))
 
     # Build summary text

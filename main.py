@@ -319,10 +319,13 @@ class SithWindow(NSObject):
         content_view = self.window.contentView()
 
         # Timer label (large, centered)
+        # NOTE: Timer uses custom colors (not semantic) as a core feature -
+        # colors are user-configurable and change based on work state
         timer_rect = NSMakeRect(0, 25, WINDOW_WIDTH, 35)
         self.timer_label = NSTextField.alloc().initWithFrame_(timer_rect)
         self.timer_label.setStringValue_("00:00:00")
         self.timer_label.setFont_(get_font(self.font_family, 20, bold=True))
+        # Initial color - will be updated by updateTimer_ based on work state
         self.timer_label.setTextColor_(NSColor.whiteColor())
         self.timer_label.setBackgroundColor_(NSColor.clearColor())
         self.timer_label.setBezeled_(False)
@@ -340,6 +343,7 @@ class SithWindow(NSObject):
         content_view.addSubview_(self.timer_label)
 
         # App label (bottom left, small)
+        # NOTE: Uses same custom color system as timer for visual consistency
         app_rect = NSMakeRect(LABEL_MARGIN_X, LABEL_MARGIN_Y, 180, 15)
         self.app_label = NSTextField.alloc().initWithFrame_(app_rect)
         self.app_label.setStringValue_("(starting...)")
@@ -357,6 +361,7 @@ class SithWindow(NSObject):
         content_view.addSubview_(self.app_label)
 
         # Status label (bottom right, small)
+        # NOTE: Uses same custom color system as timer for visual consistency
         status_rect = NSMakeRect(WINDOW_WIDTH - STATUS_LABEL_WIDTH - LABEL_MARGIN_X, LABEL_MARGIN_Y, STATUS_LABEL_WIDTH, 15)
         self.status_label = NSTextField.alloc().initWithFrame_(status_rect)
         self.status_label.setStringValue_("IDLE")
@@ -681,7 +686,8 @@ class SithWindow(NSObject):
         # Configure window
         guide_window.setTitle_("Sith Guide")
         guide_window.setLevel_(NSFloatingWindowLevel)
-        guide_window.setBackgroundColor_(NSColor.colorWithCalibratedWhite_alpha_(0.2, 0.95))
+        # Use system background color with transparency for proper appearance adaptation
+        guide_window.setBackgroundColor_(NSColor.windowBackgroundColor().colorWithAlphaComponent_(0.95))
 
         # Accessibility
         guide_window.setAccessibilityHelp_("User guide and instructions for using the Work Clock app")
@@ -703,7 +709,8 @@ class SithWindow(NSObject):
         text_view.setEditable_(False)
         text_view.setSelectable_(True)
         text_view.setBackgroundColor_(NSColor.clearColor())
-        text_view.setTextColor_(NSColor.whiteColor())
+        # Use semantic color that adapts to light/dark mode
+        text_view.setTextColor_(NSColor.labelColor())
         text_view.setFont_(get_font(self.font_family, 12, bold=False))
 
         # Load guide content from file
