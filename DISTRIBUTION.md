@@ -227,13 +227,14 @@ For Mac App Store distribution (optional - more restrictive than direct distribu
    - Create app listing at https://appstoreconnect.apple.com
    - Bundle ID: `com.parkervanroy.sith`
    - Category: Productivity
-   - Screenshots (required sizes):
-     - 1280x800 (or 2560x1600 for Retina)
-     - Take screenshots of the app in action
 
-3. **App Store Icon**
-   - Must be different from app icon
-   - 1024x1024 PNG (no transparency, no rounded corners)
+3. **Marketing Assets** (✅ Already created in `assets/appstore/`)
+   - **App Icon:** `app_icon_1024.png` (1024x1024, no rounded corners)
+   - **Screenshots:** Multiple sizes provided (1280x800 up to 2880x1800)
+     - Main timer window
+     - Settings interface
+   - **Hero Image:** For website/marketing use
+   - See `assets/appstore/README.md` for complete asset guide
 
 ### Submission Process
 
