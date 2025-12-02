@@ -52,14 +52,14 @@ def create_summary_window(summary_data, today_key):
     scroll_view.setDrawsBackground_(False)
 
     # Create text view for summary content
-    # Always uses SF Pro for UI consistency
+    # Uses SF Mono for proper alignment of tabular data
     text_view = NSTextView.alloc().initWithFrame_(NSMakeRect(0, 0, 400, 2000))
     text_view.setEditable_(False)
     text_view.setSelectable_(True)
     text_view.setBackgroundColor_(NSColor.clearColor())
     # Use semantic color that adapts to light/dark mode
     text_view.setTextColor_(NSColor.labelColor())
-    text_view.setFont_(get_font("SF Pro", 10, bold=False))
+    text_view.setFont_(get_font("SF Mono", 10, bold=False))
 
     # Build summary text
     lines = []

@@ -48,7 +48,7 @@ Customize how the timer looks when active vs. idle.
 Recent Apps:
 Quick buttons to add apps you've used recently.
 
-═══════════════════════════════════════════
+═════════════════════════════════════
 
 Tips & Tricks
 
@@ -58,19 +58,19 @@ Tips & Tricks
 • The timer saves automatically - no need to worry!
 • Drag the window to position it wherever you like
 
-═══════════════════════════════════════════
+═════════════════════════════════════
 
 Your Data
 
 All your data is stored locally in:
-~/.sith/
+~/Library/Application Support/Sith/
 
 • config.json - Your settings
 • summary.json - Your time tracking history
 
-Click "Open App Directory in Finder" in Settings to access these files.
+Click "Open App Directory" in Settings to access these files directly.
 
-═══════════════════════════════════════════
+═════════════════════════════════════
 
 Questions?
 

@@ -770,7 +770,7 @@ class SithWindow(NSObject):
         text_view.setBackgroundColor_(NSColor.clearColor())
         # Use semantic color that adapts to light/dark mode
         text_view.setTextColor_(NSColor.labelColor())
-        text_view.setFont_(get_font(self.font_family, 12, bold=False))
+        text_view.setFont_(get_font("SF Pro", 12, bold=False))
 
         # Load guide content from file
         try:
@@ -853,7 +853,7 @@ class SithWindow(NSObject):
         """Helper to add a label to the window."""
         label = NSTextField.alloc().initWithFrame_(NSMakeRect(x, y, w, h))
         label.setStringValue_(text)
-        label.setFont_(get_font(self.font_family, 11, bold=bold))
+        label.setFont_(get_font("SF Pro", 11, bold=bold))
         label.setTextColor_(NSColor.whiteColor())
         label.setBackgroundColor_(NSColor.clearColor())
         label.setBezeled_(False)
