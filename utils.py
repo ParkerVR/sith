@@ -40,7 +40,7 @@ DEFAULT_CONFIG = {
         "margin_x": 20,
         "margin_y": 60
     },
-    "update_interval": 1000,
+    "update_interval": 125,  # 1/8 second for faster updates
     "fonts": {
         "timer": ["Menlo", 20, "bold"],
         "status": ["Menlo", 9],
