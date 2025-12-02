@@ -1,0 +1,10 @@
+# Work Clock Application Dependencies
+#
+# This application uses only Python standard library modules:
+# - tkinter (GUI framework, built-in with Python)
+# - subprocess (system commands, built-in)
+# - re (regular expressions, built-in)
+# - typing (type hints, built-in)
+#
+# No external packages are required.
+# Python 3.7+ is recommended.

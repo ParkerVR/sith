@@ -1,79 +1,25 @@
-import subprocess
-import re
-from typing import Optional
+"""
+Work Clock - Main application window and entry point.
+Tracks time spent in allowed applications and displays it in a floating window.
+"""
+
 import tkinter as tk
-
-
-ALLOWLIST = {
-    "Firefox",
-    "Code",
-    "Safari"
-}
-
-IDLE_THRESHOLD = 10  # seconds
-
-
-def get_idle_seconds() -> float:
-    """
-    Returns how many seconds since the last user input
-    (mouse/keyboard) according to IOHIDSystem.
-    """
-    try:
-        out = subprocess.check_output(
-            ["ioreg", "-c", "IOHIDSystem"],
-            text=True,
-        )
-        for line in out.splitlines():
-            if "HIDIdleTime" in line:
-                # HIDIdleTime = nanoseconds
-                parts = line.split("=")
-                if len(parts) == 2:
-                    ns = int(parts[1].strip())
-                    return ns / 1_000_000_000.0
-    except Exception as e:
-        print("Error in get_idle_seconds:", e)
-    return 0.0
-
-def format_seconds(total: int) -> str:
-    hours = total // 3600
-    minutes = (total % 3600) // 60
-    seconds = total % 60
-    return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
-
-def get_frontmost_app_name() -> Optional[str]:
-    try:
-        # 1) Get the ASN of the frontmost app, e.g. "ASN:0x0-f5e25d3:"
-        asn_line = subprocess.check_output(
-            ["lsappinfo", "front"],
-            text=True
-        ).strip()
-
-        # 2) Extract the hex part after the dash
-        m = re.search(r"ASN:0x0-(?:0x)?([0-9a-fA-F]+):", asn_line)
-        if not m:
-            return None
-
-        hex_part = m.group(1)
-        # Sonoma quirk: lsappinfo info expects "ASN:0x0-0x<hex>:"
-        asn_fixed = f"ASN:0x0-0x{hex_part}:"
-
-        # 3) Ask lsappinfo for the name for that ASN
-        info_out = subprocess.check_output(
-            ["lsappinfo", "info", "-only", "name", asn_fixed],
-            text=True
-        )
-
-        # Output looks like: '"LSDisplayName"="iTerm2"'
-        m2 = re.search(r'"(?:LSDisplayName|Name)"="([^"]+)"', info_out)
-        if m2:
-            return m2.group(1)
-
-        return None
-
-    except Exception as e:
-        # Optional: log / print for debugging, but return None so the rest of your app doesn't crash
-        print("Error in get_frontmost_app_name:", e)
-        return None
+from settings import (
+    ALLOWLIST,
+    IDLE_THRESHOLD,
+    WORKING_COLOR,
+    INACTIVE_COLOR,
+    TEXT_COLOR,
+    WINDOW_WIDTH,
+    WINDOW_HEIGHT,
+    WINDOW_MARGIN_X,
+    WINDOW_MARGIN_Y,
+    UPDATE_INTERVAL,
+    TIMER_FONT,
+    STATUS_FONT,
+    STATUS_FONT_BOLD,
+)
+from utils import get_idle_seconds, get_frontmost_app_name, format_seconds
 
 class FrontAppWindow:
     def __init__(self):
@@ -87,12 +33,12 @@ class FrontAppWindow:
         # Always on top
         self.root.attributes("-topmost", True)
 
-        w, h = 260, 80
+        # Calculate window position (bottom-right corner)
         screen_w = self.root.winfo_screenwidth()
         screen_h = self.root.winfo_screenheight()
-        x = screen_w - w - 20
-        y = screen_h - h - 60
-        self.root.geometry(f"{w}x{h}+{x}+{y}")
+        x = screen_w - WINDOW_WIDTH - WINDOW_MARGIN_X
+        y = screen_h - WINDOW_HEIGHT - WINDOW_MARGIN_Y
+        self.root.geometry(f"{WINDOW_WIDTH}x{WINDOW_HEIGHT}+{x}+{y}")
 
         # Main frame for background color
         self.frame = tk.Frame(self.root)
@@ -102,7 +48,7 @@ class FrontAppWindow:
         self.timer_label = tk.Label(
             self.frame,
             text="00:00:00",
-            font=("Menlo", 20, "bold"),
+            font=TIMER_FONT,
             anchor="center"
         )
         self.timer_label.pack(expand=True, fill="both")
@@ -114,7 +60,7 @@ class FrontAppWindow:
         self.app_label = tk.Label(
             self.bottom_frame,
             text="(starting...)",
-            font=("Menlo", 9),
+            font=STATUS_FONT,
             anchor="w",
             padx=4,
             pady=2,
@@ -124,7 +70,7 @@ class FrontAppWindow:
         self.status_label = tk.Label(
             self.bottom_frame,
             text="ACTIVE",
-            font=("Menlo", 9, "bold"),
+            font=STATUS_FONT_BOLD,
             anchor="e",
             padx=4,
             pady=2,
@@ -148,8 +94,8 @@ class FrontAppWindow:
         if self.is_working:
             self.worked_seconds += 1
 
-        # Background: blue when actually working, red otherwise
-        bg = "#0077ff" if self.is_working else "#aa0000"
+        # Background: working color when active, inactive color otherwise
+        bg = WORKING_COLOR if self.is_working else INACTIVE_COLOR
 
         status_text = "ACTIVE" if not is_idle and allowed else "IDLE"
 
@@ -161,28 +107,27 @@ class FrontAppWindow:
         self.timer_label.configure(
             text=format_seconds(self.worked_seconds),
             bg=bg,
-            fg="white",
+            fg=TEXT_COLOR,
         )
         self.app_label.configure(
             text=app_name,
             bg=bg,
-            fg="white",
+            fg=TEXT_COLOR,
         )
         self.status_label.configure(
             text=status_text,
             bg=bg,
-            fg="white",
+            fg=TEXT_COLOR,
         )
 
-        # Poll again in 1 second
-        self.root.after(1000, self.update_front_app)
+        # Poll again after UPDATE_INTERVAL
+        self.root.after(UPDATE_INTERVAL, self.update_front_app)
 
     def run(self):
         self.root.mainloop()
 
 
 if __name__ == "__main__":
-    #print(get_frontmost_app_name())
     window = FrontAppWindow()
     window.run()
 
