@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!-- App icon with gradient background and clock -->
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#6366f1;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:1" />
+    </linearGradient>
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+
+  <!-- Background with rounded corners -->
+  <rect width="1024" height="1024" rx="226" fill="url(#bg)"/>
+
+  <!-- Clock face -->
+  <circle cx="512" cy="512" r="340" fill="white" opacity="0.95" filter="url(#shadow)"/>
+
+  <!-- Hour markers -->
+  <circle cx="512" cy="220" r="16" fill="#6366f1"/>
+  <circle cx="512" cy="804" r="16" fill="#6366f1"/>
+  <circle cx="220" cy="512" r="16" fill="#6366f1"/>
+  <circle cx="804" cy="512" r="16" fill="#6366f1"/>
+
+  <!-- Clock hands -->
+  <line x1="512" y1="512" x2="512" y2="320" stroke="#6366f1" stroke-width="24" stroke-linecap="round" filter="url(#shadow)"/>
+  <line x1="512" y1="512" x2="640" y2="512" stroke="#8b5cf6" stroke-width="20" stroke-linecap="round" filter="url(#shadow)"/>
+
+  <!-- Center dot -->
+  <circle cx="512" cy="512" r="28" fill="#6366f1"/>
+  <circle cx="512" cy="512" r="16" fill="white"/>
+</svg>

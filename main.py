@@ -596,10 +596,22 @@ class SithWindow(NSObject):
         status_bar = NSStatusBar.systemStatusBar()
         self.status_item = status_bar.statusItemWithLength_(NSVariableStatusItemLength)
 
-        # Set status bar icon using SF Symbol
-        icon = NSImage.imageWithSystemSymbolName_accessibilityDescription_(
-            "clock.fill", "Sith Timer"
-        )
+        # Try to load custom status bar icon, fallback to SF Symbol
+        icon = None
+        try:
+            import os
+            icon_path = os.path.join(os.path.dirname(__file__), "assets", "statusbar_icon.png")
+            if os.path.exists(icon_path):
+                icon = NSImage.alloc().initWithContentsOfFile_(icon_path)
+        except Exception as e:
+            print(f"Could not load custom icon: {e}")
+
+        # Fallback to SF Symbol if custom icon not found
+        if not icon:
+            icon = NSImage.imageWithSystemSymbolName_accessibilityDescription_(
+                "clock.fill", "Sith Timer"
+            )
+
         if icon and self.status_item.button():
             # Make it a template image so it adapts to light/dark mode
             icon.setTemplate_(True)

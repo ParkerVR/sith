@@ -5,10 +5,12 @@ Setup script for creating a standalone macOS .app bundle.
 from setuptools import setup
 
 APP = ['main.py']
-DATA_FILES = []
+DATA_FILES = [
+    ('assets', ['assets/statusbar_icon.png', 'assets/statusbar_icon@2x.png'])
+]
 OPTIONS = {
     'argv_emulation': False,
-    'iconfile': None,  # Add an .icns file here if you create one
+    'iconfile': 'assets/AppIcon.icns',
     'plist': {
         'CFBundleName': 'Sith',
         'CFBundleDisplayName': 'Sith',
