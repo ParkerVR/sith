@@ -1,5 +1,5 @@
 """
-Work Clock - Main application window and entry point.
+Sith - Main application window and entry point.
 Tracks time spent in allowed applications and displays it in a floating window.
 Uses native Cocoa/PyObjC for proper glass effect integration.
 """
@@ -78,11 +78,11 @@ WINDOW_MARGIN_Y = config.WINDOW_MARGIN_Y
 UPDATE_INTERVAL = config.UPDATE_INTERVAL
 
 
-class WorkClockWindow(NSObject):
-    """Main work clock window using native Cocoa."""
+class SithWindow(NSObject):
+    """Main Sith window using native Cocoa."""
 
     def init(self):
-        self = objc.super(WorkClockWindow, self).init()
+        self = objc.super(SithWindow, self).init()
         if self is None:
             return None
 
@@ -494,16 +494,16 @@ class WorkClockWindow(NSObject):
 
 def main():
     """Main entry point."""
-    # Set process name to "Work Clock" instead of "Python"
-    setproctitle.setproctitle("Work Clock")
-    NSProcessInfo.processInfo().setProcessName_("Work Clock")
+    # Set process name to "Sith" instead of "Python"
+    setproctitle.setproctitle("Sith")
+    NSProcessInfo.processInfo().setProcessName_("Sith")
 
     # Create application
     app = NSApplication.sharedApplication()
     app.setActivationPolicy_(NSApplicationActivationPolicyAccessory)
 
     # Create window controller
-    window_controller = WorkClockWindow.alloc().init()
+    window_controller = SithWindow.alloc().init()
 
     # Run application
     app.run()

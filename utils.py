@@ -1,5 +1,5 @@
 """
-Utility functions for the Work Clock application.
+Utility functions for the Sith application.
 """
 
 import subprocess
@@ -48,7 +48,7 @@ DEFAULT_CONFIG = {
 }
 
 # Application directory in user's home
-APP_DIR = Path.home() / ".workclock"
+APP_DIR = Path.home() / ".sith"
 CONFIG_PATH = APP_DIR / "config.json"
 SUMMARY_PATH = APP_DIR / "summary.json"
 
@@ -116,16 +116,6 @@ def today_key() -> str:
 
 def load_summary() -> dict:
     ensure_app_directory()
-
-    # Migrate old summary file if it exists
-    old_summary_path = Path.home() / ".khanh_clock_summary.json"
-    if old_summary_path.exists() and not SUMMARY_PATH.exists():
-        try:
-            # Copy old file to new location
-            SUMMARY_PATH.write_text(old_summary_path.read_text())
-            print(f"Migrated summary from {old_summary_path} to {SUMMARY_PATH}")
-        except Exception as e:
-            print(f"Failed to migrate summary: {e}")
 
     if not SUMMARY_PATH.exists():
         return {}

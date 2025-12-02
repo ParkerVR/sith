@@ -1,5 +1,5 @@
 """
-Settings window for the Work Clock application.
+Settings window for the Sith application.
 """
 
 from Cocoa import (

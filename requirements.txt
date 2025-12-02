@@ -1,4 +1,4 @@
-# Work Clock Application Dependencies
+# Sith Application Dependencies
 #
 # Standard library modules:
 # - subprocess (system commands, built-in)

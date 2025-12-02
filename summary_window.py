@@ -1,5 +1,5 @@
 """
-Work summary window for the Work Clock application.
+Work summary window for the Sith application.
 """
 
 from Cocoa import (

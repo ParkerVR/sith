@@ -1,5 +1,5 @@
 """
-Shared display utilities for the Work Clock application.
+Shared display utilities for the Sith application.
 """
 
 from Cocoa import (

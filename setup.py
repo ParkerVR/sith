@@ -10,9 +10,9 @@ OPTIONS = {
     'argv_emulation': False,
     'iconfile': None,  # Add an .icns file here if you create one
     'plist': {
-        'CFBundleName': 'Work Clock',
-        'CFBundleDisplayName': 'Work Clock',
-        'CFBundleIdentifier': 'com.khanh.workclock',
+        'CFBundleName': 'Sith',
+        'CFBundleDisplayName': 'Sith',
+        'CFBundleIdentifier': 'com.sith.app',
         'CFBundleVersion': '1.0.0',
         'CFBundleShortVersionString': '1.0.0',
         'LSUIElement': True,  # Makes it a menubar/background app (no dock icon)
@@ -23,7 +23,7 @@ OPTIONS = {
 }
 
 setup(
-    name='Work Clock',
+    name='Sith',
     app=APP,
     data_files=DATA_FILES,
     options={'py2app': OPTIONS},
