@@ -443,6 +443,29 @@ class WorkClockWindow(NSObject):
         color_well.setColor_(NSColor.cyanColor())
         test_window.contentView().addSubview_(color_well)
 
+        y_position -= 50
+
+        # Add idle timeout number field
+        label_rect = NSMakeRect(20, y_position, 150, 20)
+        label = NSTextField.alloc().initWithFrame_(label_rect)
+        label.setStringValue_("Idle timeout (sec):")
+        label.setFont_(NSFont.fontWithName_size_("Menlo", 11))
+        label.setTextColor_(NSColor.whiteColor())
+        label.setBackgroundColor_(NSColor.clearColor())
+        label.setBezeled_(False)
+        label.setDrawsBackground_(False)
+        label.setEditable_(False)
+        label.setSelectable_(False)
+        test_window.contentView().addSubview_(label)
+
+        idle_field = NSTextField.alloc().initWithFrame_(NSMakeRect(180, y_position, 60, 22))
+        idle_field.setStringValue_("2")
+        idle_field.setFont_(NSFont.fontWithName_size_("Menlo", 12))
+        idle_field.setTextColor_(NSColor.whiteColor())
+        idle_field.setBackgroundColor_(NSColor.colorWithCalibratedWhite_alpha_(0.2, 0.8))
+        idle_field.setDrawsBackground_(True)
+        test_window.contentView().addSubview_(idle_field)
+
         # Make sure window doesn't use our delegate - EXACTLY like summary
         test_window.setDelegate_(None)
 
