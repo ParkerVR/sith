@@ -3,7 +3,6 @@ Utility functions for the Work Clock application.
 """
 
 import subprocess
-import re
 from typing import Optional
 import json
 import datetime
@@ -11,7 +10,7 @@ from ctypes import c_void_p
 from settings import SUMMARY_PATH
 
 try:
-    from Cocoa import NSView, NSVisualEffectView
+    from Cocoa import NSView, NSVisualEffectView, NSWorkspace
     import objc
     PYOBJC_AVAILABLE = True
 except ImportError:
@@ -75,37 +74,20 @@ def format_seconds(total: int) -> str:
 def get_frontmost_app_name() -> Optional[str]:
     """
     Get the name of the currently active (frontmost) application.
-    Uses lsappinfo to detect the active app on macOS.
+    Uses NSWorkspace to detect the active app on macOS.
     """
-    try:
-        # 1) Get the ASN of the frontmost app, e.g. "ASN:0x0-f5e25d3:"
-        asn_line = subprocess.check_output(
-            ["lsappinfo", "front"],
-            text=True
-        ).strip()
-
-        # 2) Extract the hex part after the dash
-        m = re.search(r"ASN:0x0-(?:0x)?([0-9a-fA-F]+):", asn_line)
-        if not m:
-            return None
-
-        hex_part = m.group(1)
-        # Sonoma quirk: lsappinfo info expects "ASN:0x0-0x<hex>:"
-        asn_fixed = f"ASN:0x0-0x{hex_part}:"
-
-        # 3) Ask lsappinfo for the name for that ASN
-        info_out = subprocess.check_output(
-            ["lsappinfo", "info", "-only", "name", asn_fixed],
-            text=True
-        )
-
-        # Output looks like: '"LSDisplayName"="iTerm2"'
-        m2 = re.search(r'"(?:LSDisplayName|Name)"="([^"]+)"', info_out)
-        if m2:
-            return m2.group(1)
-
+    if not PYOBJC_AVAILABLE:
         return None
 
+    try:
+        workspace = NSWorkspace.sharedWorkspace()
+        active_app = workspace.frontmostApplication()
+        if active_app:
+            # Get localized name (what user sees)
+            app_name = active_app.localizedName()
+            if app_name:
+                return str(app_name)
+        return None
     except Exception as e:
         print("Error in get_frontmost_app_name:", e)
         return None

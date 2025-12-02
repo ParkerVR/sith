@@ -32,8 +32,9 @@ from Cocoa import (
     NSBezelStyleRounded,
     NSTextAlignmentCenter,
 )
-from Foundation import NSObject, NSMutableArray
+from Foundation import NSObject, NSMutableArray, NSProcessInfo
 import objc
+import setproctitle
 
 from settings import (
     ALLOWLIST,
@@ -371,6 +372,10 @@ class WorkClockWindow(NSObject):
 
 def main():
     """Main entry point."""
+    # Set process name to "Work Clock" instead of "Python"
+    setproctitle.setproctitle("Work Clock")
+    NSProcessInfo.processInfo().setProcessName_("Work Clock")
+
     # Create application
     app = NSApplication.sharedApplication()
     app.setActivationPolicy_(NSApplicationActivationPolicyAccessory)

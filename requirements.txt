@@ -8,5 +8,6 @@
 #
 # External packages:
 pyobjc-framework-Cocoa>=12.1  # For native macOS glass/vibrancy effect
+setproctitle>=1.3.0  # For setting process name in Activity Monitor
 #
 # Python 3.7+ is recommended.
