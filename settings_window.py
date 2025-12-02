@@ -21,7 +21,7 @@ from Foundation import NSObject, NSTimer
 import objc
 import json
 from display_utils import add_glass_effect, create_label, create_text_field, hex_to_nscolor, nscolor_to_hex
-from utils import load_config, CONFIG_PATH, load_summary
+from utils import load_config, CONFIG_PATH, load_summary, DEFAULT_CONFIG
 
 
 class FlippedView(NSView):
@@ -238,8 +238,19 @@ class SettingsController(NSObject):
             self.content_view.addSubview_(add_btn)
             x_pos += 110
 
+        y_position += 28 + 30  # After buttons + spacing
+
+        # Reset to default button
+        reset_btn = NSButton.alloc().initWithFrame_(NSMakeRect(20, y_position, 340, 32))
+        reset_btn.setTitle_("Reset to Default Settings")
+        reset_btn.setBezelStyle_(1)
+        reset_btn.setFont_(NSFont.fontWithName_size_("Menlo", 11))
+        reset_btn.setTarget_(self)
+        reset_btn.setAction_("resetToDefault:")
+        self.content_view.addSubview_(reset_btn)
+
         # Return final y position (after button height)
-        return y_position + 28
+        return y_position + 32
 
     @objc.IBAction
     def activeColorChanged_(self, sender):
@@ -319,6 +330,20 @@ class SettingsController(NSObject):
 
             # Rebuild UI to show updated list
             self.refreshWindow()
+
+    @objc.IBAction
+    def resetToDefault_(self, sender):
+        """Reset all settings to default values."""
+        # Reset config to defaults (preserve recent_apps if exists)
+        recent_apps = self.config.get("recent_apps", [])
+        self.config = DEFAULT_CONFIG.copy()
+        self.config["recent_apps"] = recent_apps
+
+        # Save to file
+        self.saveConfig()
+
+        # Rebuild UI to show default settings
+        self.refreshWindow()
 
     def saveConfig(self):
         """Save the configuration to JSON file."""

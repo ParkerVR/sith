@@ -182,6 +182,13 @@ class WorkClockWindow(NSObject):
         settings_item.setTarget_(self)
         self.menu.addItem_(settings_item)
 
+        # Reset Timer menu item
+        reset_item = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(
+            "Reset Timer", "resetTimer:", ""
+        )
+        reset_item.setTarget_(self)
+        self.menu.addItem_(reset_item)
+
         # Separator
         self.menu.addItem_(NSMenuItem.separatorItem())
 
@@ -312,6 +319,11 @@ class WorkClockWindow(NSObject):
         except Exception as e:
             import traceback
             traceback.print_exc()
+
+    def resetTimer_(self, sender):
+        """Reset the session timer to zero."""
+        self.worked_seconds = 0
+        self.timer_label.setStringValue_(format_seconds(0))
 
     def track_recent_app(self, app_name):
         """Track recently seen app for quick-add suggestions."""
