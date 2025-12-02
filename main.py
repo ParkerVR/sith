@@ -58,6 +58,9 @@ from utils import (
     load_config,
     CONFIG_PATH,
 )
+from display_utils import hex_to_nscolor, nscolor_to_hex
+from summary_window import create_summary_window
+from settings_window import create_settings_window
 
 # Load configuration from JSON
 config = get_config()
@@ -270,7 +273,7 @@ class WorkClockWindow(NSObject):
         # Update UI
         status_text = "ACTIVE" if allowed and not is_idle else "IDLE"
         text_color = (
-            self.hex_to_nscolor(GLASS_WORKING_COLOR)
+            hex_to_nscolor(GLASS_WORKING_COLOR)
             if self.is_working
             else NSColor.whiteColor()
         )
@@ -282,13 +285,6 @@ class WorkClockWindow(NSObject):
         self.status_label.setStringValue_(status_text)
         self.status_label.setTextColor_(text_color)
 
-    def hex_to_nscolor(self, hex_color):
-        """Convert hex color string to NSColor."""
-        hex_color = hex_color.lstrip("#")
-        r = int(hex_color[0:2], 16) / 255.0
-        g = int(hex_color[2:4], 16) / 255.0
-        b = int(hex_color[4:6], 16) / 255.0
-        return NSColor.colorWithCalibratedRed_green_blue_alpha_(r, g, b, 1.0)
 
     def quitApp_(self, sender):
         """Handle quit menu action."""
@@ -296,194 +292,19 @@ class WorkClockWindow(NSObject):
 
     def showSummary_(self, sender):
         """Show work summary window."""
-        # Create summary window with close button
-        summary_rect = NSMakeRect(100, 100, 380, 440)
-        summary_window = NSWindow.alloc().initWithContentRect_styleMask_backing_defer_(
-            summary_rect,
-            NSWindowStyleMaskTitled | NSWindowStyleMaskClosable,
-            NSBackingStoreBuffered,
-            False,
-        )
-
-        # Configure window
-        summary_window.setTitle_("Work Summary")
-        summary_window.setLevel_(NSFloatingWindowLevel)
-        summary_window.setBackgroundColor_(NSColor.colorWithCalibratedWhite_alpha_(0.2, 0.95))
-
-        # Add glass effect
-        effect_view = NSVisualEffectView.alloc().initWithFrame_(
-            summary_window.contentView().bounds()
-        )
-        effect_view.setMaterial_(NSVisualEffectMaterialHUDWindow)
-        effect_view.setBlendingMode_(NSVisualEffectBlendingModeBehindWindow)
-        effect_view.setState_(1)
-        effect_view.setAutoresizingMask_(18)
-        summary_window.contentView().addSubview_(effect_view)
-
-        # Start from top of content area
-        y_position = 380
-
-        # Sort entries by date (most recent first)
-        for day in sorted(self.summary.keys(), reverse=True):
-            day_data = self.summary[day]
-            total_s = day_data["total"]
-            by_app = day_data.get("by_app", {})
-
-            # Date header with total
-            date_text = f"{human_date(day):14s} {format_seconds(total_s):>8s}"
-            is_today = day == self.today
-
-            date_rect = NSMakeRect(20, y_position, 340, 18)
-            date_label = NSTextField.alloc().initWithFrame_(date_rect)
-            date_label.setStringValue_(date_text)
-            date_label.setFont_(
-                NSFont.fontWithName_size_(
-                    "Menlo Bold" if is_today else "Menlo", 10
-                )
-            )
-            date_label.setTextColor_(NSColor.whiteColor())
-            date_label.setBackgroundColor_(NSColor.clearColor())
-            date_label.setBezeled_(False)
-            date_label.setDrawsBackground_(False)
-            date_label.setEditable_(False)
-            date_label.setSelectable_(False)
-            summary_window.contentView().addSubview_(date_label)
-            y_position -= 20
-
-            # Per-app breakdown
-            if by_app:
-                for app_name in sorted(by_app.keys()):
-                    app_seconds = by_app[app_name]
-                    app_text = f"  {app_name:20s} {format_seconds(app_seconds):>8s}"
-
-                    app_rect = NSMakeRect(20, y_position, 340, 15)
-                    app_label = NSTextField.alloc().initWithFrame_(app_rect)
-                    app_label.setStringValue_(app_text)
-                    app_label.setFont_(NSFont.fontWithName_size_("Menlo", 9))
-                    app_label.setTextColor_(
-                        NSColor.colorWithCalibratedWhite_alpha_(0.9, 1.0)
-                    )
-                    app_label.setBackgroundColor_(NSColor.clearColor())
-                    app_label.setBezeled_(False)
-                    app_label.setDrawsBackground_(False)
-                    app_label.setEditable_(False)
-                    app_label.setSelectable_(False)
-                    summary_window.contentView().addSubview_(app_label)
-                    y_position -= 16
-
-            y_position -= 8  # Extra space between days
-
-        # Make sure summary window doesn't use our delegate
-        summary_window.setDelegate_(None)
-
-        # Set releasedWhenClosed to False to prevent crashes
-        summary_window.setReleasedWhenClosed_(False)
+        summary_window = create_summary_window(self.summary, self.today)
 
         # Keep reference to prevent deallocation and show window
         self.summary_windows.append(summary_window)
         summary_window.makeKeyAndOrderFront_(None)
 
     def showSettings2_(self, sender):
-        """Show test settings window - add ONE element at a time."""
-        # Create window with close button - EXACTLY like summary
-        test_rect = NSMakeRect(100, 100, 380, 440)
-        test_window = NSWindow.alloc().initWithContentRect_styleMask_backing_defer_(
-            test_rect,
-            NSWindowStyleMaskTitled | NSWindowStyleMaskClosable,
-            NSBackingStoreBuffered,
-            False,
-        )
+        """Show settings window."""
+        settings_window = create_settings_window()
 
-        # Configure window - EXACTLY like summary
-        test_window.setTitle_("Settings Test")
-        test_window.setLevel_(NSFloatingWindowLevel)
-        test_window.setBackgroundColor_(NSColor.colorWithCalibratedWhite_alpha_(0.2, 0.95))
-
-        # Add glass effect - EXACTLY like summary
-        effect_view = NSVisualEffectView.alloc().initWithFrame_(
-            test_window.contentView().bounds()
-        )
-        effect_view.setMaterial_(NSVisualEffectMaterialHUDWindow)
-        effect_view.setBlendingMode_(NSVisualEffectBlendingModeBehindWindow)
-        effect_view.setState_(1)
-        effect_view.setAutoresizingMask_(18)
-        test_window.contentView().addSubview_(effect_view)
-
-        # Start with simple text
-        y_position = 380
-
-        hello_rect = NSMakeRect(20, y_position, 340, 25)
-        hello_label = NSTextField.alloc().initWithFrame_(hello_rect)
-        hello_label.setStringValue_("Hello World!")
-        hello_label.setFont_(NSFont.fontWithName_size_("Menlo Bold", 18))
-        hello_label.setTextColor_(NSColor.whiteColor())
-        hello_label.setBackgroundColor_(NSColor.clearColor())
-        hello_label.setBezeled_(False)
-        hello_label.setDrawsBackground_(False)
-        hello_label.setEditable_(False)
-        hello_label.setSelectable_(False)
-        test_window.contentView().addSubview_(hello_label)
-
-        y_position -= 40
-
-        # Add ONE color picker
-        label_rect = NSMakeRect(20, y_position, 150, 20)
-        label = NSTextField.alloc().initWithFrame_(label_rect)
-        label.setStringValue_("Pick a color:")
-        label.setFont_(NSFont.fontWithName_size_("Menlo", 11))
-        label.setTextColor_(NSColor.whiteColor())
-        label.setBackgroundColor_(NSColor.clearColor())
-        label.setBezeled_(False)
-        label.setDrawsBackground_(False)
-        label.setEditable_(False)
-        label.setSelectable_(False)
-        test_window.contentView().addSubview_(label)
-
-        # Add NSColorWell
-        color_well = NSColorWell.alloc().initWithFrame_(NSMakeRect(180, y_position, 60, 25))
-        color_well.setColor_(NSColor.cyanColor())
-        test_window.contentView().addSubview_(color_well)
-
-        y_position -= 50
-
-        # Add idle timeout number field
-        label_rect = NSMakeRect(20, y_position, 150, 20)
-        label = NSTextField.alloc().initWithFrame_(label_rect)
-        label.setStringValue_("Idle timeout (sec):")
-        label.setFont_(NSFont.fontWithName_size_("Menlo", 11))
-        label.setTextColor_(NSColor.whiteColor())
-        label.setBackgroundColor_(NSColor.clearColor())
-        label.setBezeled_(False)
-        label.setDrawsBackground_(False)
-        label.setEditable_(False)
-        label.setSelectable_(False)
-        test_window.contentView().addSubview_(label)
-
-        idle_field = NSTextField.alloc().initWithFrame_(NSMakeRect(180, y_position, 60, 22))
-        idle_field.setStringValue_("2")
-        idle_field.setFont_(NSFont.fontWithName_size_("Menlo", 12))
-        idle_field.setTextColor_(NSColor.whiteColor())
-        idle_field.setBackgroundColor_(NSColor.colorWithCalibratedWhite_alpha_(0.2, 0.8))
-        idle_field.setDrawsBackground_(True)
-        test_window.contentView().addSubview_(idle_field)
-
-        # Add unit selector dropdown
-        unit_popup = NSPopUpButton.alloc().initWithFrame_(NSMakeRect(250, y_position - 2, 90, 26))
-        unit_popup.addItemWithTitle_("seconds")
-        unit_popup.addItemWithTitle_("minutes")
-        unit_popup.addItemWithTitle_("hours")
-        unit_popup.selectItemAtIndex_(0)  # Default to seconds
-        test_window.contentView().addSubview_(unit_popup)
-
-        # Make sure window doesn't use our delegate - EXACTLY like summary
-        test_window.setDelegate_(None)
-
-        # Set releasedWhenClosed to False to prevent crashes - EXACTLY like summary
-        test_window.setReleasedWhenClosed_(False)
-
-        # Keep reference to prevent deallocation and show window - EXACTLY like summary
-        self.summary_windows.append(test_window)
-        test_window.makeKeyAndOrderFront_(None)
+        # Keep reference to prevent deallocation and show window
+        self.summary_windows.append(settings_window)
+        settings_window.makeKeyAndOrderFront_(None)
 
     def showSettings_(self, sender):
         """Show settings window with native UI controls."""
