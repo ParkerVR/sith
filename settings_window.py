@@ -19,7 +19,6 @@ from Cocoa import (
     NSBezelStyleCircular,
     NSScrollView,
     NSView,
-    NSSecondaryLabelColor,
 )
 from Foundation import NSObject, NSTimer
 import objc

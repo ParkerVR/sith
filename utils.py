@@ -41,7 +41,7 @@ DEFAULT_CONFIG = {
         "margin_x": 20,
         "margin_y": 60
     },
-    "update_interval": 125,  # 1/8 second for faster updates
+    "update_interval": 1000,  # 1 second for efficient updates
     "fonts": {
         "timer": ["SF Pro", 20, "bold"],
         "status": ["SF Pro", 9],

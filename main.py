@@ -162,7 +162,7 @@ class SithWindow(NSObject):
         # Create window
         self.create_window()
 
-        # Start update timer
+        # Start update timer with tolerance for energy efficiency
         self.timer = NSTimer.scheduledTimerWithTimeInterval_target_selector_userInfo_repeats_(
             UPDATE_INTERVAL / 1000.0,  # Convert ms to seconds
             self,
@@ -170,6 +170,8 @@ class SithWindow(NSObject):
             None,
             True,
         )
+        # Set tolerance to ~10% for better timer coalescing (Apple recommendation)
+        self.timer.setTolerance_(UPDATE_INTERVAL / 1000.0 * 0.1)
 
         return self
 
