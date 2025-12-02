@@ -19,6 +19,7 @@ from Cocoa import (
     NSBezelStyleCircular,
     NSScrollView,
     NSView,
+    NSSecondaryLabelColor,
 )
 from Foundation import NSObject, NSTimer
 import objc
@@ -127,7 +128,15 @@ class SettingsController(NSObject):
         hello_label = create_label("Settings", 20, y_position, 340, 25, bold=True, font_size=18, font_family=font_family)
         self.content_view.addSubview_(hello_label)
 
-        y_position += 40
+        y_position += 30
+
+        # Info label - changes take effect immediately
+        info_label = create_label("Changes take effect immediately.", 20, y_position, 340, 15, bold=False, font_size=10, font_family=font_family)
+        # Use secondary label color for subtle appearance
+        info_label.setTextColor_(NSColor.secondaryLabelColor())
+        self.content_view.addSubview_(info_label)
+
+        y_position += 25
 
         # Active color picker
         label = create_label("Active text color:", 20, y_position, 150, 20, font_family=font_family)
