@@ -1,10 +1,12 @@
 # Work Clock Application Dependencies
 #
-# This application uses only Python standard library modules:
+# Standard library modules:
 # - tkinter (GUI framework, built-in with Python)
 # - subprocess (system commands, built-in)
 # - re (regular expressions, built-in)
 # - typing (type hints, built-in)
 #
-# No external packages are required.
+# External packages:
+pyobjc-framework-Cocoa>=12.1  # For native macOS glass/vibrancy effect
+#
 # Python 3.7+ is recommended.

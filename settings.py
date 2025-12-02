@@ -20,9 +20,11 @@ ALLOWLIST = {
 IDLE_THRESHOLD = 2
 
 # Color settings
-WORKING_COLOR = "#0077ff" 
+WORKING_COLOR = "#0077ff"
 INACTIVE_COLOR = "#aa0000"
-TEXT_COLOR = "#f5f5f7" 
+TEXT_COLOR = "#ffffff"  # Pure white for better visibility on glass
+GLASS_WORKING_COLOR = "#00d4ff"  # Bright cyan for active state on glass
+GLASS_INACTIVE_COLOR = "#ffffff"  # White for inactive state on glass 
 
 
 # Window settings

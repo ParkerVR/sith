@@ -10,6 +10,8 @@ from settings import (
     WORKING_COLOR,
     INACTIVE_COLOR,
     TEXT_COLOR,
+    GLASS_WORKING_COLOR,
+    GLASS_INACTIVE_COLOR,
     WINDOW_WIDTH,
     WINDOW_HEIGHT,
     WINDOW_MARGIN_X,
@@ -32,6 +34,7 @@ class FrontAppWindow:
         self.worked_seconds = 0
         self.is_working = False
         self.current_app = None
+        self.glass_applied = False
         self.summary = load_summary()
         self.today = today_key()
 
@@ -50,11 +53,23 @@ class FrontAppWindow:
         y = screen_h - WINDOW_HEIGHT - WINDOW_MARGIN_Y
         self.root.geometry(f"{WINDOW_WIDTH}x{WINDOW_HEIGHT}+{x}+{y}")
 
-        # Main background frame
-        self.root.attributes("-alpha", WINDOW_OPACITY)
+        # Apply glass effect (needs to happen before creating widgets)
+        self.root.update()  # Force window creation
+        self.glass_applied = apply_glass_effect(self.root)
 
-        self.frame = tk.Frame(self.root, bg=INACTIVE_COLOR, highlightthickness=0, bd=0)
-        self.frame.pack(expand=True, fill="both")
+        # Main background frame
+        if self.glass_applied:
+            # For glass effect: don't set background, let the blur show through
+            # We'll handle the frame background specially
+            bg_color = None
+            self.frame = tk.Frame(self.root, highlightthickness=0, bd=0)
+            self.frame.pack(expand=True, fill="both")
+        else:
+            # Fallback: use opacity if glass effect failed
+            self.root.attributes("-alpha", WINDOW_OPACITY)
+            bg_color = INACTIVE_COLOR
+            self.frame = tk.Frame(self.root, bg=bg_color, highlightthickness=0, bd=0)
+            self.frame.pack(expand=True, fill="both")
 
         # --- Drag-to-move support ---
         self._drag_x = 0
@@ -63,18 +78,22 @@ class FrontAppWindow:
         self.frame.bind("<B1-Motion>", self._drag_move)
 
         # --- Timer text (center) ---
+        initial_fg = GLASS_INACTIVE_COLOR if self.glass_applied else TEXT_COLOR
+        # Use gray background for glass to provide contrast
+        widget_bg = "#333333" if self.glass_applied else bg_color
+
         self.timer_label = tk.Label(
             self.frame,
             text="00:00:00",
             font=TIMER_FONT,
             anchor="center",
-            bg=INACTIVE_COLOR,
-            fg=TEXT_COLOR,
+            bg=widget_bg,
+            fg=initial_fg,
         )
         self.timer_label.pack(expand=True, fill="both")
 
         # --- Bottom bar ---
-        self.bottom_frame = tk.Frame(self.frame, bg=INACTIVE_COLOR, highlightthickness=0, bd=0)
+        self.bottom_frame = tk.Frame(self.frame, bg=widget_bg, highlightthickness=0, bd=0)
         self.bottom_frame.pack(side="bottom", fill="x")
 
         self.app_label = tk.Label(
@@ -84,8 +103,8 @@ class FrontAppWindow:
             anchor="w",
             padx=4,
             pady=2,
-            bg=INACTIVE_COLOR,
-            fg=TEXT_COLOR,
+            bg=widget_bg,
+            fg=initial_fg,
         )
         self.app_label.pack(side="left")
 
@@ -96,8 +115,8 @@ class FrontAppWindow:
             anchor="e",
             padx=4,
             pady=2,
-            bg=INACTIVE_COLOR,
-            fg=TEXT_COLOR,
+            bg=widget_bg,
+            fg=initial_fg,
         )
         self.status_label.pack(side="right")
 
@@ -160,29 +179,36 @@ class FrontAppWindow:
                 self.summary[self.today]["by_app"][app_name] = 0
             self.summary[self.today]["by_app"][app_name] += 1
 
-        # Pick background
-        bg = WORKING_COLOR if self.is_working else INACTIVE_COLOR
+        # Pick background and text colors
         status_text = "ACTIVE" if allowed and not is_idle else "IDLE"
 
+        if self.glass_applied:
+            # With glass effect: use dark gray background and bright colored text
+            bg = "#2a2a2a" if self.is_working else "#333333"
+            text_color = GLASS_WORKING_COLOR if self.is_working else GLASS_INACTIVE_COLOR
+        else:
+            # Without glass: use colored backgrounds
+            bg = WORKING_COLOR if self.is_working else INACTIVE_COLOR
+            text_color = TEXT_COLOR
+
         # Update UI
-        self.root.configure(bg=bg)
         self.frame.configure(bg=bg)
         self.bottom_frame.configure(bg=bg)
 
         self.timer_label.configure(
             text=format_seconds(self.worked_seconds),
             bg=bg,
-            fg=TEXT_COLOR,
+            fg=text_color,
         )
         self.app_label.configure(
             text=app_name,
             bg=bg,
-            fg=TEXT_COLOR,
+            fg=text_color,
         )
         self.status_label.configure(
             text=status_text,
             bg=bg,
-            fg=TEXT_COLOR,
+            fg=text_color,
         )
 
         self.root.after(UPDATE_INTERVAL, self.update_front_app)
