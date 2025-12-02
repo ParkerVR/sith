@@ -3,23 +3,24 @@ Welcome to Sith!
 A simple time tracker that helps you stay aware of how you spend your time on your computer.
 
 ═══════════════════════════════════════════
-
-🎯 What Does It Do?
+ 
+What Does It Do?
 
 Sith quietly sits in the corner of your screen, tracking time spent in the apps you choose. It helps you understand your work patterns without being intrusive.
 
 ═══════════════════════════════════════════
 
-⚙️  Getting Started
+Getting Started
 
 1. Right-click anywhere on the timer window
 2. Choose "Settings" from the menu
-3. Add the apps you want to track
+3. Open/interact with the app you want to track 
+4. Add the detected app(s) to the allowlist
 4. That's it! Sith will now track time in those apps
 
 ═══════════════════════════════════════════
 
-📊 Understanding the Display
+Understanding the Display
 
 • Timer: Shows total time tracked today
 • App Name: The current app you're using
@@ -31,7 +32,7 @@ Colors:
 
 ═══════════════════════════════════════════
 
-🔧 Settings Explained
+Settings Explained
 
 App Allowlist:
 The apps you want to track time for. Only time spent in these apps counts toward your total.
@@ -47,7 +48,7 @@ Quick buttons to add apps you've used recently.
 
 ═══════════════════════════════════════════
 
-💡 Tips & Tricks
+Tips & Tricks
 
 • Right-click for quick access to all features
 • Use "Reset Timer" to start fresh anytime
@@ -57,7 +58,7 @@ Quick buttons to add apps you've used recently.
 
 ═══════════════════════════════════════════
 
-📁 Your Data
+Your Data
 
 All your data is stored locally in:
 ~/.sith/
