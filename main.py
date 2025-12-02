@@ -8,6 +8,8 @@ from Cocoa import (
     NSApplication,
     NSWindow,
     NSWindowStyleMaskBorderless,
+    NSWindowStyleMaskClosable,
+    NSWindowStyleMaskTitled,
     NSBackingStoreBuffered,
     NSFloatingWindowLevel,
     NSTextField,
@@ -26,8 +28,10 @@ from Cocoa import (
     NSApp,
     NSApplicationActivationPolicyAccessory,
     NSScreen,
+    NSButton,
+    NSBezelStyleRounded,
 )
-from Foundation import NSObject
+from Foundation import NSObject, NSMutableArray
 import objc
 
 from settings import (
@@ -72,6 +76,9 @@ class WorkClockWindow(NSObject):
 
         # Drag state
         self.drag_offset = None
+
+        # Keep references to summary windows to prevent deallocation
+        self.summary_windows = []
 
         # Initialize today's entry if needed
         if self.today not in self.summary:
@@ -256,12 +263,100 @@ class WorkClockWindow(NSObject):
 
     def showSummary_(self, sender):
         """Show work summary window."""
-        # TODO: Implement summary window
-        print("Show summary - not yet implemented")
+        # Create summary window with close button
+        summary_rect = NSMakeRect(100, 100, 380, 440)
+        summary_window = NSWindow.alloc().initWithContentRect_styleMask_backing_defer_(
+            summary_rect,
+            NSWindowStyleMaskTitled | NSWindowStyleMaskClosable,
+            NSBackingStoreBuffered,
+            False,
+        )
+
+        # Configure window
+        summary_window.setTitle_("Work Summary")
+        summary_window.setLevel_(NSFloatingWindowLevel)
+        summary_window.setBackgroundColor_(NSColor.colorWithCalibratedWhite_alpha_(0.2, 0.95))
+
+        # Add glass effect
+        effect_view = NSVisualEffectView.alloc().initWithFrame_(
+            summary_window.contentView().bounds()
+        )
+        effect_view.setMaterial_(NSVisualEffectMaterialHUDWindow)
+        effect_view.setBlendingMode_(NSVisualEffectBlendingModeBehindWindow)
+        effect_view.setState_(1)
+        effect_view.setAutoresizingMask_(18)
+        summary_window.contentView().addSubview_(effect_view)
+
+        # Start from top of content area
+        y_position = 380
+
+        # Sort entries by date (most recent first)
+        for day in sorted(self.summary.keys(), reverse=True):
+            day_data = self.summary[day]
+            total_s = day_data["total"]
+            by_app = day_data.get("by_app", {})
+
+            # Date header with total
+            date_text = f"{human_date(day):14s} {format_seconds(total_s):>8s}"
+            is_today = day == self.today
+
+            date_rect = NSMakeRect(20, y_position, 340, 18)
+            date_label = NSTextField.alloc().initWithFrame_(date_rect)
+            date_label.setStringValue_(date_text)
+            date_label.setFont_(
+                NSFont.fontWithName_size_(
+                    "Menlo Bold" if is_today else "Menlo", 10
+                )
+            )
+            date_label.setTextColor_(NSColor.whiteColor())
+            date_label.setBackgroundColor_(NSColor.clearColor())
+            date_label.setBezeled_(False)
+            date_label.setDrawsBackground_(False)
+            date_label.setEditable_(False)
+            date_label.setSelectable_(False)
+            summary_window.contentView().addSubview_(date_label)
+            y_position -= 20
+
+            # Per-app breakdown
+            if by_app:
+                for app_name in sorted(by_app.keys()):
+                    app_seconds = by_app[app_name]
+                    app_text = f"  {app_name:20s} {format_seconds(app_seconds):>8s}"
+
+                    app_rect = NSMakeRect(20, y_position, 340, 15)
+                    app_label = NSTextField.alloc().initWithFrame_(app_rect)
+                    app_label.setStringValue_(app_text)
+                    app_label.setFont_(NSFont.fontWithName_size_("Menlo", 9))
+                    app_label.setTextColor_(
+                        NSColor.colorWithCalibratedWhite_alpha_(0.9, 1.0)
+                    )
+                    app_label.setBackgroundColor_(NSColor.clearColor())
+                    app_label.setBezeled_(False)
+                    app_label.setDrawsBackground_(False)
+                    app_label.setEditable_(False)
+                    app_label.setSelectable_(False)
+                    summary_window.contentView().addSubview_(app_label)
+                    y_position -= 16
+
+            y_position -= 8  # Extra space between days
+
+        # Make sure summary window doesn't use our delegate
+        summary_window.setDelegate_(None)
+
+        # Set releasedWhenClosed to False to prevent crashes
+        summary_window.setReleasedWhenClosed_(False)
+
+        # Keep reference to prevent deallocation and show window
+        self.summary_windows.append(summary_window)
+        summary_window.makeKeyAndOrderFront_(None)
 
     def windowShouldClose_(self, notification):
-        """Handle window close."""
-        self.on_close()
+        """Handle window close - only for main window."""
+        # Only close the app if it's the main window closing
+        if notification.object() == self.window:
+            self.on_close()
+            return True
+        # For other windows (like summary), just close them
         return True
 
     def on_close(self):
