@@ -11,15 +11,17 @@ from Cocoa import (
     NSColor,
     NSFont,
     NSMakeRect,
+    NSScrollView,
+    NSTextView,
 )
-from display_utils import add_glass_effect, create_label
-from utils import format_seconds, human_date
+from display_utils import add_glass_effect
+from utils import format_seconds, human_date, generate_app_bar
 
 
 def create_summary_window(summary_data, today_key):
     """Create and return a work summary window."""
     # Create summary window with close button
-    summary_rect = NSMakeRect(100, 100, 380, 440)
+    summary_rect = NSMakeRect(100, 100, 420, 500)
     summary_window = NSWindow.alloc().initWithContentRect_styleMask_backing_defer_(
         summary_rect,
         NSWindowStyleMaskTitled | NSWindowStyleMaskClosable,
@@ -35,8 +37,24 @@ def create_summary_window(summary_data, today_key):
     # Add glass effect
     add_glass_effect(summary_window)
 
-    # Start from top of content area
-    y_position = 380
+    # Create scroll view for content
+    scroll_rect = summary_window.contentView().bounds()
+    scroll_view = NSScrollView.alloc().initWithFrame_(scroll_rect)
+    scroll_view.setHasVerticalScroller_(True)
+    scroll_view.setHasHorizontalScroller_(False)
+    scroll_view.setAutoresizingMask_(18)
+    scroll_view.setDrawsBackground_(False)
+
+    # Create text view for summary content
+    text_view = NSTextView.alloc().initWithFrame_(NSMakeRect(0, 0, 400, 2000))
+    text_view.setEditable_(False)
+    text_view.setSelectable_(True)
+    text_view.setBackgroundColor_(NSColor.clearColor())
+    text_view.setTextColor_(NSColor.whiteColor())
+    text_view.setFont_(NSFont.fontWithName_size_("Menlo", 10))
+
+    # Build summary text
+    lines = []
 
     # Sort entries by date (most recent first)
     for day in sorted(summary_data.keys(), reverse=True):
@@ -44,31 +62,26 @@ def create_summary_window(summary_data, today_key):
         total_s = day_data["total"]
         by_app = day_data.get("by_app", {})
 
-        # Date header with total
-        date_text = f"{human_date(day):14s} {format_seconds(total_s):>8s}"
-        is_today = day == today_key
+        # Date header with total (no inline bar)
+        date_line = f"{human_date(day):17s} {format_seconds(total_s):>8s}"
+        lines.append(date_line)
 
-        date_label = create_label(
-            date_text, 20, y_position, 340, 18,
-            bold=is_today, font_size=10
-        )
-        summary_window.contentView().addSubview_(date_label)
-        y_position -= 20
-
-        # Per-app breakdown
+        # Per-app breakdown with bars
         if by_app:
-            for app_name in sorted(by_app.keys()):
-                app_seconds = by_app[app_name]
-                app_text = f"  {app_name:20s} {format_seconds(app_seconds):>8s}"
+            # Sort by time (descending) to show most used apps first
+            sorted_apps = sorted(by_app.items(), key=lambda x: x[1], reverse=True)
+            for app_name, app_seconds in sorted_apps:
+                bar_with_pct = generate_app_bar(app_seconds, total_s, max_width=16)
+                app_line = f"  {app_name:20s} {format_seconds(app_seconds):>8s}  {bar_with_pct}"
+                lines.append(app_line)
 
-                app_label = create_label(app_text, 20, y_position, 340, 15, font_size=9)
-                app_label.setTextColor_(
-                    NSColor.colorWithCalibratedWhite_alpha_(0.9, 1.0)
-                )
-                summary_window.contentView().addSubview_(app_label)
-                y_position -= 16
+        lines.append("")  # Empty line between days
 
-        y_position -= 8  # Extra space between days
+    summary_text = "\n".join(lines)
+    text_view.setString_(summary_text)
+
+    scroll_view.setDocumentView_(text_view)
+    summary_window.contentView().addSubview_(scroll_view)
 
     # Make sure summary window doesn't use our delegate
     summary_window.setDelegate_(None)

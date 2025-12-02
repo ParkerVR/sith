@@ -6,12 +6,10 @@ import subprocess
 from typing import Optional
 import json
 import datetime
-from ctypes import c_void_p
 from pathlib import Path
 
 try:
-    from Cocoa import NSView, NSVisualEffectView, NSWorkspace
-    import objc
+    from Cocoa import NSWorkspace
     PYOBJC_AVAILABLE = True
 except ImportError:
     PYOBJC_AVAILABLE = False
@@ -204,3 +202,145 @@ def get_frontmost_app_name() -> Optional[str]:
         return None
     except Exception:
         return None
+
+
+def format_date_short(date_str: str) -> str:
+    """
+    Format ISO date string to short format.
+    Example: "2025-12-01" -> "Nov 21"
+    """
+    try:
+        d = datetime.date.fromisoformat(date_str)
+        return d.strftime("%b %-d")  # macOS supports %-d for no padding
+    except Exception:
+        return date_str
+
+
+def generate_day_bar(seconds: int, max_seconds: int, max_width: int = 25) -> str:
+    """
+    Generate a horizontal bar chart for a day's work.
+
+    Args:
+        seconds: Total seconds worked this day
+        max_seconds: Maximum seconds across all days (for scaling)
+        max_width: Maximum width of the bar in characters
+
+    Returns:
+        String of █ characters representing the bar, or ─ for rest days
+    """
+    if seconds == 0:
+        return "─"
+
+    if max_seconds == 0:
+        return ""
+
+    # Calculate bar width proportional to max
+    bar_width = int((seconds / max_seconds) * max_width)
+    bar_width = max(1, min(bar_width, max_width))  # Clamp between 1 and max_width
+
+    return "█" * bar_width
+
+
+def generate_app_bar(app_seconds: int, day_total: int, max_width: int = 20) -> str:
+    """
+    Generate a horizontal bar chart for an app's time with percentage.
+
+    Args:
+        app_seconds: Seconds spent in this app
+        day_total: Total seconds for the day
+        max_width: Maximum width of the bar in characters
+
+    Returns:
+        String like "████████ (32%)" with bar and percentage
+    """
+    if day_total == 0 or app_seconds == 0:
+        return "█ (0%)"
+
+    # Calculate percentage
+    percentage = int((app_seconds / day_total) * 100)
+
+    # Calculate bar width
+    bar_width = int((app_seconds / day_total) * max_width)
+    bar_width = max(1, min(bar_width, max_width))  # At least 1, max max_width
+
+    bar = "█" * bar_width
+    return f"{bar} ({percentage}%)"
+
+
+def generate_trend_chart(summary_data: dict, num_days: int = 14) -> str:
+    """
+    Generate a 14-day trend chart with Unicode box borders.
+
+    Args:
+        summary_data: Dictionary with date keys (ISO format) containing work data
+        num_days: Number of days to show (default 14)
+
+    Returns:
+        Multi-line string with formatted trend chart
+    """
+    # Get last N days
+    today = datetime.date.today()
+    dates = []
+    for i in range(num_days - 1, -1, -1):
+        date = today - datetime.timedelta(days=i)
+        dates.append(date.isoformat())
+
+    # Collect data for each day
+    day_data = []
+    max_seconds = 0
+    for date_str in dates:
+        if date_str in summary_data and "total" in summary_data[date_str]:
+            seconds = summary_data[date_str]["total"]
+        else:
+            seconds = 0
+        day_data.append((date_str, seconds))
+        max_seconds = max(max_seconds, seconds)
+
+    # Build the chart
+    lines = []
+    chart_width = 46
+
+    # Top border
+    lines.append("╔" + "═" * (chart_width - 2) + "╗")
+
+    # Title
+    title = f"Last {num_days} Days Work Summary"
+    padding = (chart_width - len(title) - 2) // 2
+    lines.append("║" + " " * padding + title + " " * (chart_width - len(title) - padding - 2) + "║")
+
+    # Separator
+    lines.append("╠" + "═" * (chart_width - 2) + "╣")
+
+    # Data rows
+    today_str = today.isoformat()
+    for date_str, seconds in day_data:
+        date_short = format_date_short(date_str)
+        bar = generate_day_bar(seconds, max_seconds, max_width=25)
+
+        if seconds == 0:
+            time_str = "(rest)"
+        else:
+            time_str = format_seconds(seconds, "HH:MM")
+
+        # Format: "║ Nov 21  ████                        2:15     ║"
+        # Build the row with proper spacing
+        is_today = date_str == today_str
+        today_marker = " ← Today" if is_today else ""
+
+        # Calculate spacing to align everything
+        bar_section = f"{bar:<25}"  # Bar left-aligned in 25 chars
+        time_section = f"{time_str:>7}"  # Time right-aligned in 7 chars
+
+        row = f"║ {date_short:6} {bar_section} {time_section}{today_marker}"
+
+        # Pad to width
+        current_len = len(row)
+        padding_needed = chart_width - current_len - 1
+        row += " " * padding_needed + "║"
+
+        lines.append(row)
+
+    # Bottom border
+    lines.append("╚" + "═" * (chart_width - 2) + "╝")
+
+    return "\n".join(lines)
