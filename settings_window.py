@@ -12,6 +12,9 @@ from Cocoa import (
     NSColorWell,
     NSPopUpButton,
     NSMakeRect,
+    NSFont,
+    NSTextView,
+    NSScrollView,
 )
 from display_utils import add_glass_effect, create_label, create_text_field, hex_to_nscolor
 from utils import load_config
@@ -82,6 +85,31 @@ def create_settings_window():
     unit_popup.selectItemAtIndex_(0)  # Default to seconds
     settings_window.contentView().addSubview_(unit_popup)
     widgets['unit_popup'] = unit_popup
+
+    y_position -= 50
+
+    # Add allowlist text field - one app per line
+    label = create_label("App Allowlist:", 20, y_position, 150, 20)
+    settings_window.contentView().addSubview_(label)
+
+    # Join allowlist apps with newlines
+    allowlist = current_config.get("allowlist", [])
+    allowlist_text = "\n".join(allowlist)
+
+    # Create multi-line text field
+    scroll_view = NSScrollView.alloc().initWithFrame_(NSMakeRect(20, y_position - 80, 320, 70))
+    scroll_view.setHasVerticalScroller_(True)
+    scroll_view.setBorderType_(1)  # NSBezelBorder
+
+    text_view = NSTextView.alloc().initWithFrame_(scroll_view.contentView().bounds())
+    text_view.setString_(allowlist_text)
+    text_view.setFont_(NSFont.fontWithName_size_("Menlo", 10))
+    text_view.setTextColor_(NSColor.whiteColor())
+    text_view.setBackgroundColor_(NSColor.colorWithCalibratedWhite_alpha_(0.2, 0.8))
+
+    scroll_view.setDocumentView_(text_view)
+    settings_window.contentView().addSubview_(scroll_view)
+    widgets['allowlist_text'] = text_view
 
     # Make sure window doesn't use our delegate
     settings_window.setDelegate_(None)
