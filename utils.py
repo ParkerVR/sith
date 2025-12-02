@@ -218,34 +218,32 @@ def check_accessibility_permission() -> bool:
     """
     Check if the app has Accessibility permission to detect the frontmost app.
     Returns True if permission is granted, False otherwise.
+
+    Note: Permission check may not immediately reflect changes.
+    App restart required after granting permission.
     """
-    if not QUARTZ_AVAILABLE:
+    if not PYOBJC_AVAILABLE:
         return False
 
     try:
-        # AXIsProcessTrusted checks if we have Accessibility permission
-        trusted = Quartz.AXIsProcessTrusted()
-        return trusted
+        # Try to actually use NSWorkspace - if it fails, we don't have permission
+        workspace = NSWorkspace.sharedWorkspace()
+        active_app = workspace.frontmostApplication()
+        # If we can get the frontmost app, we have permission
+        return active_app is not None
     except Exception:
+        # If we get an exception, we don't have permission
         return False
 
 
 def request_accessibility_permission() -> None:
     """
     Request Accessibility permission with a prompt.
-    This will show the system permission dialog.
+    macOS will show the system permission dialog automatically.
     """
-    if not QUARTZ_AVAILABLE:
-        return
-
-    try:
-        # This variant shows a prompt to the user
-        options = {
-            Quartz.kAXTrustedCheckOptionPrompt: True
-        }
-        Quartz.AXIsProcessTrustedWithOptions(options)
-    except Exception:
-        pass
+    # Permission is requested automatically when we try to access
+    # NSWorkspace.frontmostApplication() for the first time
+    pass
 
 
 def get_frontmost_app_name() -> Optional[str]:

@@ -160,6 +160,9 @@ class SithWindow(NSObject):
         self.status_item = None
         self.window_visible = True
 
+        # Permission dialog state - only show once per session
+        self.permission_dialog_shown = False
+
         # Initialize today's entry if needed
         if self.today not in self.summary:
             self.summary[self.today] = {"total": 0, "by_app": {}}
@@ -330,7 +333,9 @@ class SithWindow(NSObject):
 
     def check_permissions(self):
         """Check for required permissions and request if needed."""
-        if not check_accessibility_permission():
+        # Only show dialog once per session
+        if not self.permission_dialog_shown and not check_accessibility_permission():
+            self.permission_dialog_shown = True
             self.show_permission_dialog()
 
     def show_permission_dialog(self):
