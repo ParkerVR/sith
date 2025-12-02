@@ -20,12 +20,11 @@ except ImportError:
 # Default configuration values
 DEFAULT_CONFIG = {
     "allowlist": [
-        "Firefox",
-        "Code",
-        "Safari"
+        "Sith",
     ],
     "idle_threshold": 2,
     "enable_color_animation": True,
+    "time_display_style": "HH:MM:SS",  # Options: HH:MM:SS, HH:MM, Human Readable
     "colors": {
         "working": "#0077ff",
         "inactive": "#aa0000",
@@ -160,14 +159,30 @@ def get_idle_seconds() -> float:
     return 0.0
 
 
-def format_seconds(total: int) -> str:
+def format_seconds(total: int, style: str = "HH:MM:SS") -> str:
     """
-    Format seconds into HH:MM:SS format.
+    Format seconds into various display formats.
+
+    Styles:
+    - HH:MM:SS: Standard format (01:23:45)
+    - HH:MM: Hours and minutes only (01:23)
+    - Human Readable: Compact with units (1h 23m or 23m 45s)
     """
     hours = total // 3600
     minutes = (total % 3600) // 60
     seconds = total % 60
-    return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+
+    if style == "HH:MM":
+        return f"{hours:02d}:{minutes:02d}"
+    elif style == "Human Readable":
+        if hours > 0:
+            return f"{hours}h {minutes}m"
+        elif minutes > 0:
+            return f"{minutes}m {seconds}s"
+        else:
+            return f"{seconds}s"
+    else:  # Default to HH:MM:SS
+        return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
 
 
 def get_frontmost_app_name() -> Optional[str]:

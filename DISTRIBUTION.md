@@ -49,9 +49,7 @@ To customize which apps are tracked, edit `~/.workclock/config.json`:
 ```json
 {
   "allowlist": [
-    "Firefox",
-    "Code",
-    "Safari"
+    "Sith",
   ],
   "idle_threshold": 2,
   "colors": {

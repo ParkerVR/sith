@@ -109,9 +109,10 @@ class SithWindow(NSObject):
         self.color_anim_from = None
         self.color_anim_to = None
 
-        # Load color animation setting from config
+        # Load settings from config
         config_data = load_config()
         self.color_animation_enabled = config_data.get("enable_color_animation", True)
+        self.time_display_style = config_data.get("time_display_style", "HH:MM:SS")
 
         # Drag state
         self.drag_offset = None
@@ -321,7 +322,7 @@ class SithWindow(NSObject):
             else hex_to_nscolor(GLASS_INACTIVE_COLOR)
         )
 
-        self.timer_label.setStringValue_(format_seconds(self.worked_seconds))
+        self.timer_label.setStringValue_(format_seconds(self.worked_seconds, self.time_display_style))
         self.app_label.setStringValue_(app_name)
         self.status_label.setStringValue_(status_text)
 
@@ -454,7 +455,7 @@ class SithWindow(NSObject):
     def resetTimer_(self, sender):
         """Reset the session timer to zero."""
         self.worked_seconds = 0
-        self.timer_label.setStringValue_(format_seconds(0))
+        self.timer_label.setStringValue_(format_seconds(0, self.time_display_style))
 
     def showGuide_(self, sender):
         """Show the user guide window."""
@@ -553,8 +554,9 @@ class SithWindow(NSObject):
         GLASS_WORKING_COLOR = config.GLASS_WORKING_COLOR
         GLASS_INACTIVE_COLOR = config.GLASS_INACTIVE_COLOR
 
-        # Reload color animation setting
+        # Reload settings
         self.color_animation_enabled = config_data.get("enable_color_animation", True)
+        self.time_display_style = config_data.get("time_display_style", "HH:MM:SS")
 
         # Schedule label update on next timer tick instead of blocking here
         # (update_labels will be called in the next timer cycle automatically)

@@ -182,7 +182,28 @@ class SettingsController(NSObject):
         self.content_view.addSubview_(anim_checkbox)
         self.widgets['color_animation'] = anim_checkbox
 
-        y_position += 40
+        y_position += 30
+
+        # Time display style dropdown
+        label = create_label("Time display:", 20, y_position, 150, 20)
+        self.content_view.addSubview_(label)
+
+        time_style_popup = NSPopUpButton.alloc().initWithFrame_(NSMakeRect(180, y_position - 2, 160, 26))
+        time_style_popup.addItemWithTitle_("HH:MM:SS")
+        time_style_popup.addItemWithTitle_("HH:MM")
+        time_style_popup.addItemWithTitle_("Human Readable")
+
+        # Select current style
+        current_style = self.config.get("time_display_style", "HH:MM:SS")
+        style_index = {"HH:MM:SS": 0, "HH:MM": 1, "Human Readable": 2}.get(current_style, 0)
+        time_style_popup.selectItemAtIndex_(style_index)
+
+        time_style_popup.setTarget_(self)
+        time_style_popup.setAction_("timeStyleChanged:")
+        self.content_view.addSubview_(time_style_popup)
+        self.widgets['time_style'] = time_style_popup
+
+        y_position += 50
 
         # Allowlist section
         self.allowlist_y_start = y_position
@@ -329,6 +350,16 @@ class SettingsController(NSObject):
         """Handle color animation checkbox change."""
         enabled = sender.state() == 1
         self.config["enable_color_animation"] = enabled
+
+        # Save to file
+        self.saveConfig()
+
+    @objc.IBAction
+    def timeStyleChanged_(self, sender):
+        """Handle time display style dropdown change."""
+        styles = ["HH:MM:SS", "HH:MM", "Human Readable"]
+        selected_index = sender.indexOfSelectedItem()
+        self.config["time_display_style"] = styles[selected_index]
 
         # Save to file
         self.saveConfig()
