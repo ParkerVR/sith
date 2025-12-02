@@ -1,8 +1,15 @@
 """
 Configuration settings for the Work Clock application.
+
+You need to restart the app to apply any settings change.
 """
 
-# Application allowlist - apps where work time is tracked
+from pathlib import Path
+
+# Where your saved log goes
+SUMMARY_PATH = Path.home() / ".khanh_clock_summary.json"
+
+# Application allowlist - apps where work time is tracked. You can see the current app in the bottom right of the app when it's running.
 ALLOWLIST = {
     "Firefox",
     "Code",
@@ -13,8 +20,8 @@ ALLOWLIST = {
 IDLE_THRESHOLD = 10
 
 # Color settings
-WORKING_COLOR = "#0077ff"  # Blue - when actively working
-INACTIVE_COLOR = "#aa0000"  # Red - when not working or idle
+WORKING_COLOR = "#0077ff" 
+INACTIVE_COLOR = "#aa0000"
 TEXT_COLOR = "white"
 
 # Window settings
@@ -24,7 +31,7 @@ WINDOW_MARGIN_X = 20
 WINDOW_MARGIN_Y = 60
 
 # Update interval in milliseconds
-UPDATE_INTERVAL = 1000
+UPDATE_INTERVAL = 300
 
 # Font settings
 TIMER_FONT = ("Menlo", 20, "bold")

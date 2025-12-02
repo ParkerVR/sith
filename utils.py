@@ -5,6 +5,33 @@ Utility functions for the Work Clock application.
 import subprocess
 import re
 from typing import Optional
+import json
+import datetime
+from settings import SUMMARY_PATH
+
+def today_key() -> str:
+    return datetime.date.today().isoformat()
+
+def load_summary() -> dict[str, int]:
+    if not SUMMARY_PATH.exists():
+        return {}
+    try:
+        data = json.loads(SUMMARY_PATH.read_text())
+        # ensure int values
+        return {k: int(v) for k, v in data.items()}
+    except Exception:
+        return {}
+
+def save_summary(data: dict[str, int]) -> None:
+    SUMMARY_PATH.write_text(json.dumps(data, indent=2))
+
+def human_date(key: str) -> str:
+    # "2025-12-01" -> "Dec 1, 2025"
+    try:
+        d = datetime.date.fromisoformat(key)
+        return d.strftime("%b %-d, %Y")  # macOS supports %-d
+    except Exception:
+        return key
 
 
 def get_idle_seconds() -> float:
