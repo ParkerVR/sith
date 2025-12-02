@@ -240,7 +240,6 @@ class SettingsController(NSObject):
 
         # Save to file
         self.saveConfig()
-        print(f"Active color changed to: {hex_color}")
 
     @objc.IBAction
     def idleTimeoutChanged_(self, sender):
@@ -258,16 +257,13 @@ class SettingsController(NSObject):
 
             # Save to file
             self.saveConfig()
-            print(f"Idle timeout changed to: {idle_seconds} seconds")
         except ValueError:
-            print("Invalid idle timeout value")
+            pass  # Invalid input, ignore
 
     @objc.IBAction
     def addApp_(self, sender):
         """Handle add app button click."""
-        print(f"addApp_ called! sender={sender}")
         app_name = sender.title()
-        print(f"Adding app: {app_name}")
 
         # Add to allowlist
         if "allowlist" not in self.config:
@@ -275,58 +271,39 @@ class SettingsController(NSObject):
 
         if app_name not in self.config["allowlist"]:
             self.config["allowlist"].append(app_name)
-            print(f"App added to config, now: {self.config['allowlist']}")
 
             # Save to file
-            print("BEFORE saveConfig()")
             self.saveConfig()
-            print("AFTER saveConfig() - about to refresh")
 
             # Rebuild UI to show updated list
             self.refreshWindow()
-        else:
-            print(f"App {app_name} already in allowlist")
 
     @objc.IBAction
     def removeApp_(self, sender):
         """Handle remove app button click."""
-        print(f"removeApp_ called! sender={sender}")
         index = sender.tag()
-        print(f"Button tag (index): {index}")
 
         if "allowlist" in self.config and index < len(self.config["allowlist"]):
-            app_name = self.config["allowlist"][index]
-            print(f"Removing app at index {index}: {app_name}")
             self.config["allowlist"].pop(index)
-            print(f"Allowlist after removal: {self.config['allowlist']}")
 
             # Save to file
             self.saveConfig()
-            print(f"Saved config after removing: {app_name}")
 
             # Rebuild UI to show updated list
-            print("About to refresh window...")
             self.refreshWindow()
-        else:
-            print(f"Invalid index {index} or no allowlist in config")
 
     def saveConfig(self):
         """Save the configuration to JSON file."""
         CONFIG_PATH.write_text(json.dumps(self.config, indent=2))
-        print(f"Config saved to {CONFIG_PATH}")
 
         # Notify main app that settings changed
-        print(f"About to call callback, on_settings_changed={self.on_settings_changed}")
         if self.on_settings_changed:
-            print("Calling on_settings_changed callback...")
             self.on_settings_changed()
-            print("Callback completed, returning from saveConfig")
 
     def refreshWindow(self):
         """Refresh the window to show updated settings."""
         # Reload config from disk first
         self.config = load_config()
-        print(f"Refreshing window with allowlist: {self.config.get('allowlist', [])}")
 
         # Clear the content view
         for view in list(self.content_view.subviews()):
@@ -337,7 +314,6 @@ class SettingsController(NSObject):
 
         # Force window to redisplay
         self.window.display()
-        print("Window refreshed and displayed")
 
     @objc.IBAction
     def refreshRecentApps_(self, timer):
@@ -352,7 +328,6 @@ class SettingsController(NSObject):
 
         # Check if the list has changed
         if recent_apps != self.last_recent_apps:
-            print(f"Recent apps changed: {self.last_recent_apps} -> {recent_apps}")
             self.last_recent_apps = recent_apps
 
             # Reload config and refresh window to show new buttons
@@ -361,7 +336,6 @@ class SettingsController(NSObject):
 
     def windowWillClose_(self, notification):
         """Handle window close - stop the refresh timer."""
-        print("Settings window closing, stopping refresh timer")
         if self.refresh_timer:
             self.refresh_timer.invalidate()
             self.refresh_timer = None

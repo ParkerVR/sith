@@ -1,13 +1,13 @@
 # Work Clock Application Dependencies
 #
 # Standard library modules:
-# - tkinter (GUI framework, built-in with Python)
 # - subprocess (system commands, built-in)
-# - re (regular expressions, built-in)
+# - json (config management, built-in)
+# - datetime (time tracking, built-in)
 # - typing (type hints, built-in)
 #
 # External packages:
-pyobjc-framework-Cocoa>=12.1  # For native macOS glass/vibrancy effect
+pyobjc-framework-Cocoa>=12.1  # For native macOS Cocoa framework and UI
 setproctitle>=1.3.0  # For setting process name in Activity Monitor
 #
 # Python 3.7+ is recommended.

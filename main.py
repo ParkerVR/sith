@@ -301,19 +301,15 @@ class WorkClockWindow(NSObject):
 
     def showSettings_(self, sender):
         """Show settings window."""
-        print("showSettings_ called")
         try:
             settings_controller = create_settings_controller()
-            print(f"Settings controller created: {settings_controller}")
 
             # Set callback to reload config when settings change
             settings_controller.on_settings_changed = self.reloadConfig
 
             # Keep reference to prevent deallocation
             self.summary_windows.append(settings_controller)
-            print("Settings window shown")
         except Exception as e:
-            print(f"Error creating settings window: {e}")
             import traceback
             traceback.print_exc()
 
@@ -342,7 +338,6 @@ class WorkClockWindow(NSObject):
 
     def reloadConfig(self):
         """Reload configuration and update display."""
-        print("reloadConfig: START")
         global config, ALLOWLIST, IDLE_THRESHOLD, GLASS_WORKING_COLOR, GLASS_INACTIVE_COLOR
 
         # Reload config from file
@@ -352,12 +347,8 @@ class WorkClockWindow(NSObject):
         GLASS_WORKING_COLOR = config.GLASS_WORKING_COLOR
         GLASS_INACTIVE_COLOR = config.GLASS_INACTIVE_COLOR
 
-        print(f"Config reloaded: ALLOWLIST={ALLOWLIST}, IDLE_THRESHOLD={IDLE_THRESHOLD}")
-        print(f"Colors: GLASS_WORKING_COLOR={GLASS_WORKING_COLOR}")
-
         # Schedule label update on next timer tick instead of blocking here
         # (update_labels will be called in the next timer cycle automatically)
-        print("reloadConfig: DONE - returning")
 
     def add_label(self, window, text, x, y, w, h, bold=False):
         """Helper to add a label to the window."""
