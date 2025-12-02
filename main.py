@@ -39,6 +39,7 @@ from Cocoa import (
     NSTableView,
     NSTableColumn,
     NSBezelBorder,
+    NSPopUpButton,
 )
 from Foundation import NSObject, NSMutableArray, NSProcessInfo
 import objc
@@ -465,6 +466,14 @@ class WorkClockWindow(NSObject):
         idle_field.setBackgroundColor_(NSColor.colorWithCalibratedWhite_alpha_(0.2, 0.8))
         idle_field.setDrawsBackground_(True)
         test_window.contentView().addSubview_(idle_field)
+
+        # Add unit selector dropdown
+        unit_popup = NSPopUpButton.alloc().initWithFrame_(NSMakeRect(250, y_position - 2, 90, 26))
+        unit_popup.addItemWithTitle_("seconds")
+        unit_popup.addItemWithTitle_("minutes")
+        unit_popup.addItemWithTitle_("hours")
+        unit_popup.selectItemAtIndex_(0)  # Default to seconds
+        test_window.contentView().addSubview_(unit_popup)
 
         # Make sure window doesn't use our delegate - EXACTLY like summary
         test_window.setDelegate_(None)
