@@ -12,6 +12,7 @@ from Cocoa import (
     NSWindowStyleMaskTitled,
     NSBackingStoreBuffered,
     NSFloatingWindowLevel,
+    NSNormalWindowLevel,
     NSTextField,
     NSColor,
     NSFont,
@@ -46,6 +47,8 @@ from Cocoa import (
     NSStatusBar,
     NSVariableStatusItemLength,
     NSImage,
+    NSOnState,
+    NSOffState,
 )
 from Foundation import NSObject, NSMutableArray, NSProcessInfo, NSDate
 import objc
@@ -234,15 +237,15 @@ class SithWindow(NSObject):
         # Set delegate to update menu items before showing
         self.menu.setDelegate_(self)
 
-        # Show Summary menu item (can have multiple)
+        # Work Summary menu item (uses checkmark to show state)
         self.summary_menu_item = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(
-            "Show Work Summary", "toggleSummary:", ""
+            "Work Summary", "toggleSummary:", ""
         )
         self.summary_menu_item.setTarget_(self)
         self.summary_menu_item.setAccessibilityHelp_("Open window showing work time breakdown by day and app")
         self.menu.addItem_(self.summary_menu_item)
 
-        # Settings menu item (toggle)
+        # Settings menu item (uses checkmark to show state)
         self.settings_menu_item = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(
             "Settings", "toggleSettings:", ""
         )
@@ -250,7 +253,7 @@ class SithWindow(NSObject):
         self.settings_menu_item.setAccessibilityHelp_("Configure app allowlist, colors, and behavior")
         self.menu.addItem_(self.settings_menu_item)
 
-        # Guide menu item (toggle)
+        # Guide menu item (uses checkmark to show state)
         self.guide_menu_item = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(
             "Guide", "toggleGuide:", ""
         )
@@ -296,24 +299,24 @@ class SithWindow(NSObject):
         self.update_menu_items()
 
     def update_menu_items(self):
-        """Update menu item titles based on window states."""
-        # Summary menu
+        """Update menu item states with checkmarks based on window visibility."""
+        # Summary menu - show checkmark when window is visible
         if self.summary_window and self.summary_window.isVisible():
-            self.summary_menu_item.setTitle_("Close Work Summary")
+            self.summary_menu_item.setState_(NSOnState)
         else:
-            self.summary_menu_item.setTitle_("Show Work Summary")
+            self.summary_menu_item.setState_(NSOffState)
 
-        # Settings menu
+        # Settings menu - show checkmark when window is visible
         if self.settings_window and self.settings_window.window and self.settings_window.window.isVisible():
-            self.settings_menu_item.setTitle_("Close Settings")
+            self.settings_menu_item.setState_(NSOnState)
         else:
-            self.settings_menu_item.setTitle_("Settings")
+            self.settings_menu_item.setState_(NSOffState)
 
-        # Guide menu
+        # Guide menu - show checkmark when window is visible
         if self.guide_window and self.guide_window.isVisible():
-            self.guide_menu_item.setTitle_("Close Guide")
+            self.guide_menu_item.setState_(NSOnState)
         else:
-            self.guide_menu_item.setTitle_("Guide")
+            self.guide_menu_item.setState_(NSOffState)
 
     def create_labels(self):
         """Create text labels for timer, app name, and status."""
