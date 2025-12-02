@@ -54,10 +54,12 @@ from Cocoa import (
     NSURL,
     NSAttributedString,
 )
-from Foundation import NSObject, NSMutableArray, NSProcessInfo, NSDate
+from Foundation import NSObject, NSMutableArray, NSProcessInfo, NSDate, NSData
 import objc
 import setproctitle
 import json
+import markdown
+from pathlib import Path
 
 from utils import (
     get_frontmost_app_name,
@@ -782,77 +784,53 @@ class SithWindow(NSObject):
         text_view.setBackgroundColor_(NSColor.clearColor())
 
         # Load guide content from file and parse as markdown
-        try:
-            from pathlib import Path
-            from Foundation import NSData
-            import markdown
+        guide_path = Path(__file__).parent / "GUIDE.md"
+        guide_markdown = guide_path.read_text()
 
-            guide_path = Path(__file__).parent / "GUIDE.md"
-            guide_markdown = guide_path.read_text()
+        # Convert markdown to HTML
+        html_content = markdown.markdown(guide_markdown)
 
-            # Convert markdown to HTML using Python's markdown library
-            html_content = markdown.markdown(guide_markdown, extensions=['fenced_code', 'nl2br'])
+        # Wrap in basic HTML structure with styling
+        html_full = f"""
+        <html>
+        <head>
+            <meta name="color-scheme" content="light dark">
+            <style>
+                body {{
+                    font-family: -apple-system;
+                    font-size: 13px;
+                    line-height: 1.5;
+                    padding: 10px;
+                    color-scheme: light dark;
+                }}
+                h1 {{ font-size: 24px; font-weight: bold; margin-top: 20px; margin-bottom: 10px; }}
+                h2 {{ font-size: 18px; font-weight: bold; margin-top: 16px; margin-bottom: 8px; }}
+                h3 {{ font-size: 15px; font-weight: bold; margin-top: 12px; margin-bottom: 6px; }}
+                p {{ margin: 8px 0; }}
+                ul, ol {{ margin: 8px 0; padding-left: 20px; }}
+                li {{ margin: 4px 0; }}
+                code {{ font-family: 'SF Mono', Menlo, monospace; background-color: rgba(128,128,128,0.15); padding: 2px 4px; border-radius: 3px; }}
+                pre {{ font-family: 'SF Mono', Menlo, monospace; background-color: rgba(128,128,128,0.15); padding: 10px; border-radius: 5px; overflow-x: auto; }}
+                hr {{ border: none; border-top: 1px solid rgba(128,128,128,0.3); margin: 16px 0; }}
+            </style>
+        </head>
+        <body>{html_content}</body>
+        </html>
+        """
 
-            # Wrap in basic HTML structure with styling
-            # Use color-scheme and system colors for proper dark mode support
-            html_full = f"""
-            <html>
-            <head>
-                <meta name="color-scheme" content="light dark">
-                <style>
-                    body {{
-                        font-family: -apple-system;
-                        font-size: 13px;
-                        line-height: 1.5;
-                        padding: 10px;
-                        color-scheme: light dark;
-                    }}
-                    h1 {{ font-size: 24px; font-weight: bold; margin-top: 20px; margin-bottom: 10px; }}
-                    h2 {{ font-size: 18px; font-weight: bold; margin-top: 16px; margin-bottom: 8px; }}
-                    h3 {{ font-size: 15px; font-weight: bold; margin-top: 12px; margin-bottom: 6px; }}
-                    p {{ margin: 8px 0; }}
-                    ul, ol {{ margin: 8px 0; padding-left: 20px; }}
-                    li {{ margin: 4px 0; }}
-                    code {{ font-family: 'SF Mono', Menlo, monospace; background-color: rgba(128,128,128,0.15); padding: 2px 4px; border-radius: 3px; }}
-                    pre {{ font-family: 'SF Mono', Menlo, monospace; background-color: rgba(128,128,128,0.15); padding: 10px; border-radius: 5px; overflow-x: auto; }}
-                    hr {{ border: none; border-top: 1px solid rgba(128,128,128,0.3); margin: 16px 0; }}
-                </style>
-            </head>
-            <body>{html_content}</body>
-            </html>
-            """
+        # Convert HTML to NSAttributedString
+        html_data = html_full.encode('utf-8')
+        ns_data = NSData.alloc().initWithBytes_length_(html_data, len(html_data))
+        attributed_string = NSAttributedString.alloc().initWithHTML_documentAttributes_(ns_data, None)[0]
 
-            # Convert HTML to NSAttributedString
-            html_data = html_full.encode('utf-8')
-            ns_data = NSData.alloc().initWithBytes_length_(html_data, len(html_data))
+        # Apply the attributed string
+        text_view.textStorage().setAttributedString_(attributed_string)
 
-            attributed_string = NSAttributedString.alloc().initWithHTML_documentAttributes_(ns_data, None)[0]
-
-            if attributed_string:
-                # Apply the attributed string
-                text_view.textStorage().setAttributedString_(attributed_string)
-
-                # Post-process to apply semantic text color throughout
-                text_storage = text_view.textStorage()
-                full_range = (0, text_storage.length())
-                semantic_color = NSColor.labelColor()
-                text_storage.addAttribute_value_range_("NSColor", semantic_color, full_range)
-            else:
-                # Fallback to plain text if HTML parsing fails
-                text_view.setTextColor_(NSColor.labelColor())
-                text_view.setFont_(get_font("SF Pro", 12, bold=False))
-                text_view.setString_(guide_markdown)
-        except ImportError:
-            # markdown library not available, use plain text
-            text_view.setTextColor_(NSColor.labelColor())
-            text_view.setFont_(get_font("SF Pro", 12, bold=False))
-            text_view.setString_(f"Markdown library not installed. Install with: pip3 install markdown\n\n{guide_markdown if 'guide_markdown' in locals() else ''}")
-        except Exception as e:
-            # Fallback to plain text on error
-            text_view.setTextColor_(NSColor.labelColor())
-            text_view.setFont_(get_font("SF Pro", 12, bold=False))
-            error_text = f"Markdown rendering failed. Showing plain text.\n\nError: {e}\n\n{guide_markdown if 'guide_markdown' in locals() else 'Could not load guide.'}"
-            text_view.setString_(error_text)
+        # Post-process to apply semantic text color throughout
+        text_storage = text_view.textStorage()
+        full_range = (0, text_storage.length())
+        semantic_color = NSColor.labelColor()
+        text_storage.addAttribute_value_range_("NSColor", semantic_color, full_range)
 
         scroll_view.setDocumentView_(text_view)
         guide_window.contentView().addSubview_(scroll_view)

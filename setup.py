@@ -6,7 +6,8 @@ from setuptools import setup
 
 APP = ['main.py']
 DATA_FILES = [
-    ('assets', ['assets/statusbar_icon.png', 'assets/statusbar_icon@2x.png'])
+    ('assets', ['assets/statusbar_icon.png', 'assets/statusbar_icon@2x.png']),
+    ('', ['GUIDE.md'])  # Include guide in Resources root
 ]
 OPTIONS = {
     'argv_emulation': False,
@@ -26,8 +27,8 @@ OPTIONS = {
         'LSApplicationCategoryType': 'public.app-category.productivity',
         'NSHumanReadableCopyright': 'Copyright © 2025 Parker Van Roy. All rights reserved.',
     },
-    'packages': ['objc', 'Cocoa', 'Foundation', 'Quartz', 'setproctitle'],
-    'includes': ['settings', 'utils'],
+    'packages': ['objc', 'Cocoa', 'Foundation', 'Quartz', 'setproctitle', 'markdown'],
+    'includes': ['settings', 'utils', 'display_utils', 'settings_window', 'summary_window', 'html.parser', 'xml.etree.ElementTree'],
 }
 
 setup(
