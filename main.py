@@ -86,6 +86,22 @@ LABEL_MARGIN_Y = 8  # Vertical margin from bottom for bottom labels
 STATUS_LABEL_WIDTH = 52  # Width of status label
 
 
+class WindowDelegate(NSObject):
+    """Delegate to handle window close events."""
+
+    def initWithCallback_(self, callback):
+        self = objc.super(WindowDelegate, self).init()
+        if self is None:
+            return None
+        self.callback = callback
+        return self
+
+    def windowWillClose_(self, notification):
+        """Called when window is about to close."""
+        if self.callback:
+            self.callback()
+
+
 class SithWindow(NSObject):
     """Main Sith window using native Cocoa."""
 
@@ -117,8 +133,15 @@ class SithWindow(NSObject):
         # Drag state
         self.drag_offset = None
 
-        # Keep references to summary windows to prevent deallocation
-        self.summary_windows = []
+        # Track individual windows to prevent duplicates
+        self.settings_window = None
+        self.guide_window = None
+        self.summary_window = None
+
+        # Store menu items for dynamic updates
+        self.summary_menu_item = None
+        self.settings_menu_item = None
+        self.guide_menu_item = None
 
         # Initialize today's entry if needed
         if self.today not in self.summary:
@@ -194,26 +217,29 @@ class SithWindow(NSObject):
         """Create right-click context menu."""
         self.menu = NSMenu.alloc().init()
 
-        # Show Summary menu item
-        summary_item = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(
-            "Show Work Summary", "showSummary:", ""
-        )
-        summary_item.setTarget_(self)
-        self.menu.addItem_(summary_item)
+        # Set delegate to update menu items before showing
+        self.menu.setDelegate_(self)
 
-        # Settings menu item
-        settings_item = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(
-            "Settings", "showSettings:", ""
+        # Show Summary menu item (can have multiple)
+        self.summary_menu_item = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(
+            "Show Work Summary", "toggleSummary:", ""
         )
-        settings_item.setTarget_(self)
-        self.menu.addItem_(settings_item)
+        self.summary_menu_item.setTarget_(self)
+        self.menu.addItem_(self.summary_menu_item)
 
-        # Guide menu item
-        guide_item = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(
-            "Guide", "showGuide:", ""
+        # Settings menu item (toggle)
+        self.settings_menu_item = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(
+            "Settings", "toggleSettings:", ""
         )
-        guide_item.setTarget_(self)
-        self.menu.addItem_(guide_item)
+        self.settings_menu_item.setTarget_(self)
+        self.menu.addItem_(self.settings_menu_item)
+
+        # Guide menu item (toggle)
+        self.guide_menu_item = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(
+            "Guide", "toggleGuide:", ""
+        )
+        self.guide_menu_item.setTarget_(self)
+        self.menu.addItem_(self.guide_menu_item)
 
         # Reset Timer menu item
         reset_item = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(
@@ -234,6 +260,30 @@ class SithWindow(NSObject):
 
         # Enable right-click on content view
         self.window.contentView().setMenu_(self.menu)
+
+    def menuNeedsUpdate_(self, menu):
+        """Called automatically before menu is displayed - updates menu items."""
+        self.update_menu_items()
+
+    def update_menu_items(self):
+        """Update menu item titles based on window states."""
+        # Summary menu
+        if self.summary_window and self.summary_window.isVisible():
+            self.summary_menu_item.setTitle_("Close Work Summary")
+        else:
+            self.summary_menu_item.setTitle_("Show Work Summary")
+
+        # Settings menu
+        if self.settings_window and self.settings_window.window and self.settings_window.window.isVisible():
+            self.settings_menu_item.setTitle_("Close Settings")
+        else:
+            self.settings_menu_item.setTitle_("Settings")
+
+        # Guide menu
+        if self.guide_window and self.guide_window.isVisible():
+            self.guide_menu_item.setTitle_("Close Guide")
+        else:
+            self.guide_menu_item.setTitle_("Guide")
 
     def create_labels(self):
         """Create text labels for timer, app name, and status."""
@@ -305,14 +355,16 @@ class SithWindow(NSObject):
         self.is_working = allowed and not is_idle
 
         if self.is_working:
-            self.worked_seconds += 1
+            # Increment by actual elapsed time (in seconds)
+            elapsed = UPDATE_INTERVAL / 1000.0
+            self.worked_seconds += elapsed
             self.current_app = app_name
 
             # Update today's summary
-            self.summary[self.today]["total"] += 1
+            self.summary[self.today]["total"] += elapsed
             if app_name not in self.summary[self.today]["by_app"]:
                 self.summary[self.today]["by_app"][app_name] = 0
-            self.summary[self.today]["by_app"][app_name] += 1
+            self.summary[self.today]["by_app"][app_name] += elapsed
 
         # Update UI
         status_text = "ACTIVE" if allowed and not is_idle else "IDLE"
@@ -322,7 +374,8 @@ class SithWindow(NSObject):
             else hex_to_nscolor(GLASS_INACTIVE_COLOR)
         )
 
-        self.timer_label.setStringValue_(format_seconds(self.worked_seconds, self.time_display_style))
+        # Display timer (convert float to int for clean display)
+        self.timer_label.setStringValue_(format_seconds(int(self.worked_seconds), self.time_display_style))
         self.app_label.setStringValue_(app_name)
         self.status_label.setStringValue_(status_text)
 
@@ -430,40 +483,88 @@ class SithWindow(NSObject):
         """Handle quit menu action."""
         self.on_close()
 
-    def showSummary_(self, sender):
-        """Show work summary window."""
+    def toggleSummary_(self, sender):
+        """Toggle work summary window (only one allowed)."""
+        # If summary window exists and is visible, close it
+        if self.summary_window and self.summary_window.isVisible():
+            self.summary_window.close()
+            return
+
+        # Otherwise, create new summary window
         summary_window = create_summary_window(self.summary, self.today)
 
-        # Keep reference to prevent deallocation and show window
-        self.summary_windows.append(summary_window)
-        summary_window.makeKeyAndOrderFront_(None)
+        # Set up delegate to track window closing
+        delegate = WindowDelegate.alloc().initWithCallback_(self.on_summary_closed)
+        summary_window.setDelegate_(delegate)
 
-    def showSettings_(self, sender):
-        """Show settings window."""
+        # Store reference and show window
+        self.summary_window = summary_window
+        summary_window.makeKeyAndOrderFront_(None)
+        self.update_menu_items()
+
+    def on_summary_closed(self):
+        """Called when summary window closes."""
+        self.summary_window = None
+        self.update_menu_items()
+
+    def toggleSettings_(self, sender):
+        """Toggle settings window (only one allowed)."""
+        # If settings window exists and is visible, close it
+        if self.settings_window and self.settings_window.window and self.settings_window.window.isVisible():
+            self.settings_window.window.close()
+            return
+
+        # Otherwise, create new settings window
         try:
             settings_controller = create_settings_controller()
 
             # Set callback to reload config when settings change
             settings_controller.on_settings_changed = self.reloadConfig
 
-            # Keep reference to prevent deallocation
-            self.summary_windows.append(settings_controller)
+            # Set up delegate to track window closing
+            delegate = WindowDelegate.alloc().initWithCallback_(self.on_settings_closed)
+            settings_controller.window.setDelegate_(delegate)
+
+            # Store reference and update menu
+            self.settings_window = settings_controller
+            self.update_menu_items()
         except Exception as e:
             import traceback
             traceback.print_exc()
+
+    def on_settings_closed(self):
+        """Called when settings window closes."""
+        self.settings_window = None
+        self.update_menu_items()
 
     def resetTimer_(self, sender):
         """Reset the session timer to zero."""
         self.worked_seconds = 0
         self.timer_label.setStringValue_(format_seconds(0, self.time_display_style))
 
-    def showGuide_(self, sender):
-        """Show the user guide window."""
+    def toggleGuide_(self, sender):
+        """Toggle guide window (only one allowed)."""
+        # If guide window exists and is visible, close it
+        if self.guide_window and self.guide_window.isVisible():
+            self.guide_window.close()
+            return
+
+        # Otherwise, create new guide window
         guide_window = self.create_guide_window()
 
-        # Keep reference to prevent deallocation and show window
-        self.summary_windows.append(guide_window)
+        # Set up delegate to track window closing
+        delegate = WindowDelegate.alloc().initWithCallback_(self.on_guide_closed)
+        guide_window.setDelegate_(delegate)
+
+        # Store reference and show window
+        self.guide_window = guide_window
         guide_window.makeKeyAndOrderFront_(None)
+        self.update_menu_items()
+
+    def on_guide_closed(self):
+        """Called when guide window closes."""
+        self.guide_window = None
+        self.update_menu_items()
 
     def create_guide_window(self):
         """Create and return the guide window."""
@@ -581,65 +682,59 @@ class SithWindow(NSObject):
         if not current_app:
             return
 
-        # Find the settings window
-        for window in self.summary_windows:
-            if hasattr(window, 'settings_widgets'):
-                text_view = window.settings_widgets.get('allowlist_text')
-                if text_view:
-                    current_text = str(text_view.string())
-                    apps = [app.strip() for app in current_text.split('\n') if app.strip()]
+        # Update settings window if it's open
+        if self.settings_window and hasattr(self.settings_window, 'settings_widgets'):
+            text_view = self.settings_window.settings_widgets.get('allowlist_text')
+            if text_view:
+                current_text = str(text_view.string())
+                apps = [app.strip() for app in current_text.split('\n') if app.strip()]
 
-                    if current_app not in apps:
-                        apps.append(current_app)
-                        text_view.setString_('\n'.join(apps))
-
-                break
+                if current_app not in apps:
+                    apps.append(current_app)
+                    text_view.setString_('\n'.join(apps))
 
     def saveSettings_(self, sender):
         """Save settings from the settings window."""
-        # Find the settings window
-        for window in self.summary_windows:
-            if hasattr(window, 'settings_widgets'):
-                try:
-                    widgets = window.settings_widgets
+        # Use tracked settings window
+        if self.settings_window and hasattr(self.settings_window, 'settings_widgets'):
+            try:
+                widgets = self.settings_window.settings_widgets
 
-                    # Get values from UI
-                    active_color = widgets['active_color'].color()
-                    inactive_color = widgets['inactive_color'].color()
-                    idle_timeout = int(widgets['idle_field'].stringValue())
+                # Get values from UI
+                active_color = widgets['active_color'].color()
+                inactive_color = widgets['inactive_color'].color()
+                idle_timeout = int(widgets['idle_field'].stringValue())
 
-                    # Get allowlist
-                    allowlist_text = str(widgets['allowlist_text'].string())
-                    allowlist = [app.strip() for app in allowlist_text.split('\n') if app.strip()]
+                # Get allowlist
+                allowlist_text = str(widgets['allowlist_text'].string())
+                allowlist = [app.strip() for app in allowlist_text.split('\n') if app.strip()]
 
-                    # Convert colors to hex
-                    active_hex = self.nscolor_to_hex(active_color)
-                    inactive_hex = self.nscolor_to_hex(inactive_color)
+                # Convert colors to hex
+                active_hex = self.nscolor_to_hex(active_color)
+                inactive_hex = self.nscolor_to_hex(inactive_color)
 
-                    # Load current config and update
-                    config = load_config()
-                    config["allowlist"] = allowlist
-                    config["idle_threshold"] = idle_timeout
-                    config["colors"]["glass_working"] = active_hex
-                    config["colors"]["glass_inactive"] = inactive_hex
+                # Load current config and update
+                config = load_config()
+                config["allowlist"] = allowlist
+                config["idle_threshold"] = idle_timeout
+                config["colors"]["glass_working"] = active_hex
+                config["colors"]["glass_inactive"] = inactive_hex
 
-                    # Save to file
-                    CONFIG_PATH.write_text(json.dumps(config, indent=2))
+                # Save to file
+                CONFIG_PATH.write_text(json.dumps(config, indent=2))
 
-                    # Close window
-                    window.close()
+                # Close window
+                self.settings_window.close()
 
-                    # Show restart message
-                    self.show_alert("Settings Saved", "Please restart the app for changes to take effect.")
+                # Show restart message
+                self.show_alert("Settings Saved", "Please restart the app for changes to take effect.")
 
-                except ValueError as e:
-                    # Show error
-                    self.show_alert("Invalid Input", f"Idle timeout must be a number: {str(e)}")
-                except Exception as e:
-                    # Show error
-                    self.show_alert("Error", f"Could not save: {str(e)}")
-
-                break
+            except ValueError as e:
+                # Show error
+                self.show_alert("Invalid Input", f"Idle timeout must be a number: {str(e)}")
+            except Exception as e:
+                # Show error
+                self.show_alert("Error", f"Could not save: {str(e)}")
 
     def nscolor_to_hex(self, color):
         """Convert NSColor to hex string."""
@@ -654,11 +749,9 @@ class SithWindow(NSObject):
 
     def cancelSettings_(self, sender):
         """Cancel settings editing."""
-        # Find and close the settings window
-        for window in self.summary_windows:
-            if hasattr(window, 'settings_widgets'):
-                window.close()
-                break
+        # Close settings window if open
+        if self.settings_window:
+            self.settings_window.close()
 
     def show_alert(self, title, message):
         """Show an alert dialog."""

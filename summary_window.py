@@ -56,26 +56,32 @@ def create_summary_window(summary_data, today_key):
     # Build summary text
     lines = []
 
-    # Sort entries by date (most recent first)
-    for day in sorted(summary_data.keys(), reverse=True):
-        day_data = summary_data[day]
-        total_s = day_data["total"]
-        by_app = day_data.get("by_app", {})
+    # Check if there's any data
+    if not summary_data:
+        lines.append("No work data recorded yet.")
+        lines.append("")
+        lines.append("Start using tracked apps to see your work summary here!")
+    else:
+        # Sort entries by date (most recent first)
+        for day in sorted(summary_data.keys(), reverse=True):
+            day_data = summary_data[day]
+            total_s = day_data.get("total", 0)
+            by_app = day_data.get("by_app", {})
 
-        # Date header with total (no inline bar)
-        date_line = f"{human_date(day):17s} {format_seconds(total_s):>8s}"
-        lines.append(date_line)
+            # Date header with total (no inline bar)
+            date_line = f"{human_date(day):17s} {format_seconds(int(total_s)):>8s}"
+            lines.append(date_line)
 
-        # Per-app breakdown with bars
-        if by_app:
-            # Sort by time (descending) to show most used apps first
-            sorted_apps = sorted(by_app.items(), key=lambda x: x[1], reverse=True)
-            for app_name, app_seconds in sorted_apps:
-                bar_with_pct = generate_app_bar(app_seconds, total_s, max_width=16)
-                app_line = f"  {app_name:20s} {format_seconds(app_seconds):>8s}  {bar_with_pct}"
-                lines.append(app_line)
+            # Per-app breakdown with bars
+            if by_app:
+                # Sort by time (descending) to show most used apps first
+                sorted_apps = sorted(by_app.items(), key=lambda x: x[1], reverse=True)
+                for app_name, app_seconds in sorted_apps:
+                    bar_with_pct = generate_app_bar(int(app_seconds), int(total_s), max_width=16)
+                    app_line = f"  {app_name:20s} {format_seconds(int(app_seconds)):>8s}  {bar_with_pct}"
+                    lines.append(app_line)
 
-        lines.append("")  # Empty line between days
+            lines.append("")  # Empty line between days
 
     summary_text = "\n".join(lines)
     text_view.setString_(summary_text)
