@@ -31,7 +31,7 @@ WINDOW_MARGIN_X = 20
 WINDOW_MARGIN_Y = 60
 
 # Update interval in milliseconds
-UPDATE_INTERVAL = 300
+UPDATE_INTERVAL = 1000
 
 # Font settings
 TIMER_FONT = ("Menlo", 20, "bold")
