@@ -31,6 +31,7 @@ from Cocoa import (
     NSButton,
     NSBezelStyleRounded,
     NSTextAlignmentCenter,
+    NSTextAlignmentRight,
     NSTextView,
     NSScrollView,
     NSMakeSize,
@@ -76,6 +77,11 @@ WINDOW_HEIGHT = config.WINDOW_HEIGHT
 WINDOW_MARGIN_X = config.WINDOW_MARGIN_X
 WINDOW_MARGIN_Y = config.WINDOW_MARGIN_Y
 UPDATE_INTERVAL = config.UPDATE_INTERVAL
+
+# UI layout constants
+LABEL_MARGIN_X = 8  # Horizontal margin from edges for bottom labels
+LABEL_MARGIN_Y = 8  # Vertical margin from bottom for bottom labels
+STATUS_LABEL_WIDTH = 52  # Width of status label
 
 
 class SithWindow(NSObject):
@@ -231,7 +237,7 @@ class SithWindow(NSObject):
         content_view.addSubview_(self.timer_label)
 
         # App label (bottom left, small)
-        app_rect = NSMakeRect(8, 8, 180, 15)
+        app_rect = NSMakeRect(LABEL_MARGIN_X, LABEL_MARGIN_Y, 180, 15)
         self.app_label = NSTextField.alloc().initWithFrame_(app_rect)
         self.app_label.setStringValue_("(starting...)")
         self.app_label.setFont_(NSFont.fontWithName_size_("Menlo", 9))
@@ -244,7 +250,7 @@ class SithWindow(NSObject):
         content_view.addSubview_(self.app_label)
 
         # Status label (bottom right, small)
-        status_rect = NSMakeRect(WINDOW_WIDTH - 60, 8, 52, 15)
+        status_rect = NSMakeRect(WINDOW_WIDTH - STATUS_LABEL_WIDTH - LABEL_MARGIN_X, LABEL_MARGIN_Y, STATUS_LABEL_WIDTH, 15)
         self.status_label = NSTextField.alloc().initWithFrame_(status_rect)
         self.status_label.setStringValue_("IDLE")
         self.status_label.setFont_(NSFont.fontWithName_size_("Menlo Bold", 9))
@@ -254,7 +260,7 @@ class SithWindow(NSObject):
         self.status_label.setDrawsBackground_(False)
         self.status_label.setEditable_(False)
         self.status_label.setSelectable_(False)
-        self.status_label.setAlignment_(1)  # Right alignment
+        self.status_label.setAlignment_(NSTextAlignmentRight)
         content_view.addSubview_(self.status_label)
 
     def updateTimer_(self, timer):
