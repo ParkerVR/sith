@@ -36,20 +36,6 @@ from Foundation import NSObject, NSMutableArray, NSProcessInfo
 import objc
 import setproctitle
 
-from settings import (
-    ALLOWLIST,
-    IDLE_THRESHOLD,
-    WORKING_COLOR,
-    INACTIVE_COLOR,
-    TEXT_COLOR,
-    GLASS_WORKING_COLOR,
-    GLASS_INACTIVE_COLOR,
-    WINDOW_WIDTH,
-    WINDOW_HEIGHT,
-    WINDOW_MARGIN_X,
-    WINDOW_MARGIN_Y,
-    UPDATE_INTERVAL,
-)
 from utils import (
     get_frontmost_app_name,
     get_idle_seconds,
@@ -58,7 +44,23 @@ from utils import (
     save_summary,
     today_key,
     human_date,
+    get_config,
 )
+
+# Load configuration from JSON
+config = get_config()
+ALLOWLIST = config.ALLOWLIST
+IDLE_THRESHOLD = config.IDLE_THRESHOLD
+WORKING_COLOR = config.WORKING_COLOR
+INACTIVE_COLOR = config.INACTIVE_COLOR
+TEXT_COLOR = config.TEXT_COLOR
+GLASS_WORKING_COLOR = config.GLASS_WORKING_COLOR
+GLASS_INACTIVE_COLOR = config.GLASS_INACTIVE_COLOR
+WINDOW_WIDTH = config.WINDOW_WIDTH
+WINDOW_HEIGHT = config.WINDOW_HEIGHT
+WINDOW_MARGIN_X = config.WINDOW_MARGIN_X
+WINDOW_MARGIN_Y = config.WINDOW_MARGIN_Y
+UPDATE_INTERVAL = config.UPDATE_INTERVAL
 
 
 class WorkClockWindow(NSObject):

@@ -1,6 +1,16 @@
 """
 Configuration settings for the Work Clock application.
 
+⚠️ DEPRECATED: This file is no longer used by the application.
+
+The app now uses JSON-based configuration stored in:
+    ~/.workclock/config.json
+
+To customize settings, edit that file instead.
+This file is kept for reference only.
+
+---
+
 You need to restart the app to apply any settings change.
 """
 
