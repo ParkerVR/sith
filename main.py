@@ -30,6 +30,7 @@ from Cocoa import (
     NSScreen,
     NSButton,
     NSBezelStyleRounded,
+    NSTextAlignmentCenter,
 )
 from Foundation import NSObject, NSMutableArray
 import objc
@@ -184,7 +185,10 @@ class WorkClockWindow(NSObject):
         self.timer_label.setDrawsBackground_(False)
         self.timer_label.setEditable_(False)
         self.timer_label.setSelectable_(False)
-        self.timer_label.setAlignment_(2)  # Center alignment
+        self.timer_label.setAlignment_(NSTextAlignmentCenter)
+        # Also set the cell alignment to ensure it's centered
+        if self.timer_label.cell():
+            self.timer_label.cell().setAlignment_(NSTextAlignmentCenter)
         content_view.addSubview_(self.timer_label)
 
         # App label (bottom left, small)
