@@ -60,7 +60,7 @@ from utils import (
 )
 from display_utils import hex_to_nscolor, nscolor_to_hex
 from summary_window import create_summary_window
-from settings_window import create_settings_window
+from settings_window import create_settings_controller
 
 # Load configuration from JSON
 config = get_config()
@@ -302,14 +302,12 @@ class WorkClockWindow(NSObject):
         """Show settings window."""
         print("showSettings2_ called")
         try:
-            settings_window, widgets = create_settings_window()
-            print(f"Settings window created: {settings_window}")
+            settings_controller = create_settings_controller()
+            print(f"Settings controller created: {settings_controller}")
 
-            # Keep reference to prevent deallocation and show window
-            self.summary_windows.append(settings_window)
-            print("About to show window")
-            settings_window.makeKeyAndOrderFront_(None)
-            print("Window shown")
+            # Keep reference to prevent deallocation
+            self.summary_windows.append(settings_controller)
+            print("Settings window shown")
         except Exception as e:
             print(f"Error creating settings window: {e}")
             import traceback
