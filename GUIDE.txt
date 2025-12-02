@@ -1,5 +1,7 @@
 Welcome to Sith!
 
+In Archaic English, the term Sith means "journey," "experience" or "point in time".
+
 A simple time tracker that helps you stay aware of how you spend your time on your computer.
 
 ═══════════════════════════════════════════
