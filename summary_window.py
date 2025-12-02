@@ -8,6 +8,7 @@ from Cocoa import (
     NSWindowStyleMaskClosable,
     NSBackingStoreBuffered,
     NSFloatingWindowLevel,
+    NSNormalWindowLevel,
     NSColor,
     NSFont,
     NSMakeRect,
@@ -31,7 +32,8 @@ def create_summary_window(summary_data, today_key):
 
     # Configure window
     summary_window.setTitle_("Work Summary")
-    summary_window.setLevel_(NSFloatingWindowLevel)
+    # Use normal window level - summary window doesn't need to float above everything
+    summary_window.setLevel_(NSNormalWindowLevel)
     # Use system background color with transparency for proper appearance adaptation
     summary_window.setBackgroundColor_(NSColor.windowBackgroundColor().colorWithAlphaComponent_(0.95))
 

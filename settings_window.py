@@ -8,6 +8,7 @@ from Cocoa import (
     NSWindowStyleMaskClosable,
     NSBackingStoreBuffered,
     NSFloatingWindowLevel,
+    NSNormalWindowLevel,
     NSColor,
     NSColorWell,
     NSPopUpButton,
@@ -66,7 +67,8 @@ class SettingsController(NSObject):
 
         # Configure window
         self.window.setTitle_("Settings")
-        self.window.setLevel_(NSFloatingWindowLevel)
+        # Use normal window level - settings don't need to float above everything
+        self.window.setLevel_(NSNormalWindowLevel)
         # Use system background color with transparency for proper appearance adaptation
         self.window.setBackgroundColor_(NSColor.windowBackgroundColor().colorWithAlphaComponent_(0.95))
 

@@ -189,6 +189,7 @@ class SithWindow(NSObject):
         )
 
         # Configure window
+        # Timer window floats above other windows - this is a utility HUD that should always be visible
         self.window.setLevel_(NSFloatingWindowLevel)
         self.window.setOpaque_(False)
         self.window.setBackgroundColor_(NSColor.clearColor())
@@ -685,7 +686,8 @@ class SithWindow(NSObject):
 
         # Configure window
         guide_window.setTitle_("Sith Guide")
-        guide_window.setLevel_(NSFloatingWindowLevel)
+        # Use normal window level - guide window doesn't need to float above everything
+        guide_window.setLevel_(NSNormalWindowLevel)
         # Use system background color with transparency for proper appearance adaptation
         guide_window.setBackgroundColor_(NSColor.windowBackgroundColor().colorWithAlphaComponent_(0.95))
 
