@@ -199,7 +199,7 @@ class SithWindow(NSObject):
         self.window.setMovableByWindowBackground_(True)
 
         # Accessibility
-        self.window.setAccessibilityTitle_("Work Clock Timer")
+        self.window.setAccessibilityTitle_("Sith Timer")
         self.window.setAccessibilityHelp_("Floating timer window showing work time tracking")
 
         # Add rounded corners (Apple standard)
@@ -288,7 +288,7 @@ class SithWindow(NSObject):
             "Quit", "quitApp:", "q"
         )
         quit_item.setTarget_(self)
-        quit_item.setAccessibilityHelp_("Quit the Work Clock application")
+        quit_item.setAccessibilityHelp_("Quit Sith")
         self.menu.addItem_(quit_item)
 
         # Enable right-click on content view
@@ -544,7 +544,7 @@ class SithWindow(NSObject):
 
         # Set status bar icon using SF Symbol
         icon = NSImage.imageWithSystemSymbolName_accessibilityDescription_(
-            "clock.fill", "Work Clock Timer"
+            "clock.fill", "Sith Timer"
         )
         if icon and self.status_item.button():
             # Make it a template image so it adapts to light/dark mode
@@ -553,8 +553,8 @@ class SithWindow(NSObject):
 
         # Accessibility
         if self.status_item.button():
-            self.status_item.button().setAccessibilityLabel_("Work Clock")
-            self.status_item.button().setAccessibilityHelp_("Work time tracking app. Click to show menu.")
+            self.status_item.button().setAccessibilityLabel_("Sith")
+            self.status_item.button().setAccessibilityHelp_("Sith work time tracking app. Click to show menu.")
 
         # Create menu for status bar item
         status_menu = NSMenu.alloc().init()
@@ -575,7 +575,7 @@ class SithWindow(NSObject):
             "Quit", "quitApp:", "q"
         )
         quit_item.setTarget_(self)
-        quit_item.setAccessibilityHelp_("Quit the Work Clock application")
+        quit_item.setAccessibilityHelp_("Quit Sith")
         status_menu.addItem_(quit_item)
 
         self.status_item.setMenu_(status_menu)
@@ -695,7 +695,7 @@ class SithWindow(NSObject):
         guide_window.setBackgroundColor_(NSColor.windowBackgroundColor().colorWithAlphaComponent_(0.95))
 
         # Accessibility
-        guide_window.setAccessibilityHelp_("User guide and instructions for using the Work Clock app")
+        guide_window.setAccessibilityHelp_("User guide and instructions for using Sith")
 
         # Add glass effect
         from display_utils import add_glass_effect

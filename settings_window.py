@@ -74,7 +74,7 @@ class SettingsController(NSObject):
         self.window.setBackgroundColor_(NSColor.windowBackgroundColor().colorWithAlphaComponent_(0.95))
 
         # Accessibility
-        self.window.setAccessibilityHelp_("Configure Work Clock settings including colors, fonts, and tracked applications")
+        self.window.setAccessibilityHelp_("Configure Sith settings including colors, fonts, and tracked applications")
 
         # Add glass effect
         add_glass_effect(self.window)
