@@ -129,11 +129,38 @@ class WorkClockWindow(NSObject):
         # Create text fields
         self.create_labels()
 
+        # Create context menu
+        self.create_menu()
+
         # Set window delegate for handling events
         self.window.setDelegate_(self)
 
         # Show window
         self.window.makeKeyAndOrderFront_(None)
+
+    def create_menu(self):
+        """Create right-click context menu."""
+        self.menu = NSMenu.alloc().init()
+
+        # Show Summary menu item
+        summary_item = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(
+            "Show Work Summary", "showSummary:", ""
+        )
+        summary_item.setTarget_(self)
+        self.menu.addItem_(summary_item)
+
+        # Separator
+        self.menu.addItem_(NSMenuItem.separatorItem())
+
+        # Quit menu item
+        quit_item = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(
+            "Quit", "quitApp:", "q"
+        )
+        quit_item.setTarget_(self)
+        self.menu.addItem_(quit_item)
+
+        # Enable right-click on content view
+        self.window.contentView().setMenu_(self.menu)
 
     def create_labels(self):
         """Create text labels for timer, app name, and status."""
@@ -222,6 +249,15 @@ class WorkClockWindow(NSObject):
         g = int(hex_color[2:4], 16) / 255.0
         b = int(hex_color[4:6], 16) / 255.0
         return NSColor.colorWithCalibratedRed_green_blue_alpha_(r, g, b, 1.0)
+
+    def quitApp_(self, sender):
+        """Handle quit menu action."""
+        self.on_close()
+
+    def showSummary_(self, sender):
+        """Show work summary window."""
+        # TODO: Implement summary window
+        print("Show summary - not yet implemented")
 
     def windowShouldClose_(self, notification):
         """Handle window close."""
