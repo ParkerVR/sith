@@ -383,7 +383,7 @@ class WorkClockWindow(NSObject):
         summary_window.makeKeyAndOrderFront_(None)
 
     def showSettings2_(self, sender):
-        """Show test settings window - identical to summary but with hello world."""
+        """Show test settings window - add ONE element at a time."""
         # Create window with close button - EXACTLY like summary
         test_rect = NSMakeRect(100, 100, 380, 440)
         test_window = NSWindow.alloc().initWithContentRect_styleMask_backing_defer_(
@@ -408,7 +408,7 @@ class WorkClockWindow(NSObject):
         effect_view.setAutoresizingMask_(18)
         test_window.contentView().addSubview_(effect_view)
 
-        # Add some hello world text
+        # Start with simple text
         y_position = 380
 
         hello_rect = NSMakeRect(20, y_position, 340, 25)
@@ -425,17 +425,23 @@ class WorkClockWindow(NSObject):
 
         y_position -= 40
 
-        test_rect = NSMakeRect(20, y_position, 340, 18)
-        test_label = NSTextField.alloc().initWithFrame_(test_rect)
-        test_label.setStringValue_("This is a test settings window")
-        test_label.setFont_(NSFont.fontWithName_size_("Menlo", 12))
-        test_label.setTextColor_(NSColor.whiteColor())
-        test_label.setBackgroundColor_(NSColor.clearColor())
-        test_label.setBezeled_(False)
-        test_label.setDrawsBackground_(False)
-        test_label.setEditable_(False)
-        test_label.setSelectable_(False)
-        test_window.contentView().addSubview_(test_label)
+        # Add ONE color picker
+        label_rect = NSMakeRect(20, y_position, 150, 20)
+        label = NSTextField.alloc().initWithFrame_(label_rect)
+        label.setStringValue_("Pick a color:")
+        label.setFont_(NSFont.fontWithName_size_("Menlo", 11))
+        label.setTextColor_(NSColor.whiteColor())
+        label.setBackgroundColor_(NSColor.clearColor())
+        label.setBezeled_(False)
+        label.setDrawsBackground_(False)
+        label.setEditable_(False)
+        label.setSelectable_(False)
+        test_window.contentView().addSubview_(label)
+
+        # Add NSColorWell
+        color_well = NSColorWell.alloc().initWithFrame_(NSMakeRect(180, y_position, 60, 25))
+        color_well.setColor_(NSColor.cyanColor())
+        test_window.contentView().addSubview_(color_well)
 
         # Make sure window doesn't use our delegate - EXACTLY like summary
         test_window.setDelegate_(None)
