@@ -49,6 +49,9 @@ from Cocoa import (
     NSImage,
     NSOnState,
     NSOffState,
+    NSAlert,
+    NSWorkspace,
+    NSURL,
 )
 from Foundation import NSObject, NSMutableArray, NSProcessInfo, NSDate
 import objc
@@ -66,6 +69,8 @@ from utils import (
     get_config,
     load_config,
     CONFIG_PATH,
+    check_accessibility_permission,
+    request_accessibility_permission,
 )
 from display_utils import hex_to_nscolor, nscolor_to_hex, get_font
 from summary_window import create_summary_window
@@ -161,6 +166,9 @@ class SithWindow(NSObject):
 
         # Create window
         self.create_window()
+
+        # Check and request accessibility permission if needed
+        self.check_permissions()
 
         # Start update timer with tolerance for energy efficiency
         self.timer = NSTimer.scheduledTimerWithTimeInterval_target_selector_userInfo_repeats_(
@@ -319,6 +327,35 @@ class SithWindow(NSObject):
             self.guide_menu_item.setState_(NSOnState)
         else:
             self.guide_menu_item.setState_(NSOffState)
+
+    def check_permissions(self):
+        """Check for required permissions and request if needed."""
+        if not check_accessibility_permission():
+            self.show_permission_dialog()
+
+    def show_permission_dialog(self):
+        """Show a dialog explaining permission requirements."""
+        alert = NSAlert.alloc().init()
+        alert.setMessageText_("Accessibility Permission Required")
+        alert.setInformativeText_(
+            "Sith needs Accessibility permission to detect which app you're currently using.\n\n"
+            "Without this permission, the timer won't be able to track your work time.\n\n"
+            "Click 'Open System Settings' to grant permission, then restart Sith."
+        )
+        alert.addButtonWithTitle_("Open System Settings")
+        alert.addButtonWithTitle_("Later")
+        alert.setAlertStyle_(1)  # Informational style
+
+        response = alert.runModal()
+
+        if response == 1000:  # First button (Open System Settings)
+            # Open System Settings to Privacy & Security > Accessibility
+            from Cocoa import NSURL
+            workspace = NSWorkspace.sharedWorkspace()
+            # Open the Accessibility pane in System Settings
+            url = NSURL.URLWithString_("x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")
+            workspace.openURL_(url)
+        # If "Later" is clicked, just close the dialog
 
     def create_labels(self):
         """Create text labels for timer, app name, and status."""

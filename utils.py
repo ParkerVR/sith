@@ -14,6 +14,12 @@ try:
 except ImportError:
     PYOBJC_AVAILABLE = False
 
+try:
+    import Quartz
+    QUARTZ_AVAILABLE = True
+except ImportError:
+    QUARTZ_AVAILABLE = False
+
 
 # Default configuration values
 DEFAULT_CONFIG = {
@@ -206,6 +212,40 @@ def format_seconds(total: int, style: str = "HH:MM:SS") -> str:
             return f"{seconds}s"
     else:  # Default to HH:MM:SS
         return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+
+
+def check_accessibility_permission() -> bool:
+    """
+    Check if the app has Accessibility permission to detect the frontmost app.
+    Returns True if permission is granted, False otherwise.
+    """
+    if not QUARTZ_AVAILABLE:
+        return False
+
+    try:
+        # AXIsProcessTrusted checks if we have Accessibility permission
+        trusted = Quartz.AXIsProcessTrusted()
+        return trusted
+    except Exception:
+        return False
+
+
+def request_accessibility_permission() -> None:
+    """
+    Request Accessibility permission with a prompt.
+    This will show the system permission dialog.
+    """
+    if not QUARTZ_AVAILABLE:
+        return
+
+    try:
+        # This variant shows a prompt to the user
+        options = {
+            Quartz.kAXTrustedCheckOptionPrompt: True
+        }
+        Quartz.AXIsProcessTrustedWithOptions(options)
+    except Exception:
+        pass
 
 
 def get_frontmost_app_name() -> Optional[str]:
