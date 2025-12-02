@@ -12,7 +12,7 @@ OPTIONS = {
     'plist': {
         'CFBundleName': 'Sith',
         'CFBundleDisplayName': 'Sith',
-        'CFBundleIdentifier': 'com.sith.app',
+        'CFBundleIdentifier': 'com.parkervanroy.sith',
         'CFBundleVersion': '1.0.0',
         'CFBundleShortVersionString': '1.0.0',
         'LSUIElement': True,  # Makes it a menubar/background app (no dock icon)
@@ -22,7 +22,7 @@ OPTIONS = {
         # App Store metadata
         'LSMinimumSystemVersion': '10.15.0',
         'LSApplicationCategoryType': 'public.app-category.productivity',
-        'NSHumanReadableCopyright': 'Copyright © 2025. All rights reserved.',
+        'NSHumanReadableCopyright': 'Copyright © 2025 Parker Van Roy. All rights reserved.',
     },
     'packages': ['objc', 'Cocoa', 'Foundation', 'Quartz', 'setproctitle'],
     'includes': ['settings', 'utils'],

@@ -4,7 +4,7 @@
 
 APP_PATH="dist/Sith.app"
 ENTITLEMENTS="entitlements.plist"
-IDENTITY="Developer ID Application: YOUR NAME (TEAMID)"
+IDENTITY="Developer ID Application: Parker Van Roy (CWDC2RFBVT)"
 
 echo "Signing $APP_PATH with entitlements..."
 
