@@ -214,6 +214,21 @@ class SettingsController(NSObject):
 
         y_position += 30
 
+        # Status bar checkbox
+        status_bar_checkbox = NSButton.alloc().initWithFrame_(NSMakeRect(20, y_position, 340, 20))
+        status_bar_checkbox.setButtonType_(3)  # Switch/checkbox type
+        status_bar_checkbox.setTitle_("Show status bar (app name and status)")
+        status_bar_checkbox.setState_(1 if self.config.get("show_status_bar", True) else 0)
+        status_bar_checkbox.setFont_(get_font("SF Pro", 10, bold=False))
+        status_bar_checkbox.setTarget_(self)
+        status_bar_checkbox.setAction_("statusBarChanged:")
+        # Accessibility
+        status_bar_checkbox.setAccessibilityHelp_("Show or hide the app name and IDLE/ACTIVE status at the bottom of the timer window")
+        self.content_view.addSubview_(status_bar_checkbox)
+        self.widgets['status_bar'] = status_bar_checkbox
+
+        y_position += 30
+
         # Time display style dropdown
         label = create_label("Time display:", 20, y_position, 150, 20)
         self.content_view.addSubview_(label)
@@ -415,6 +430,15 @@ class SettingsController(NSObject):
         """Handle color animation checkbox change."""
         enabled = sender.state() == 1
         self.config["enable_color_animation"] = enabled
+
+        # Save to file
+        self.saveConfig()
+
+    @objc.IBAction
+    def statusBarChanged_(self, sender):
+        """Handle status bar checkbox change."""
+        enabled = sender.state() == 1
+        self.config["show_status_bar"] = enabled
 
         # Save to file
         self.saveConfig()

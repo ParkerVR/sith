@@ -22,6 +22,7 @@ DEFAULT_CONFIG = {
     ],
     "idle_threshold": 2,
     "enable_color_animation": True,
+    "show_status_bar": True,  # Show app name and IDLE/ACTIVE status
     "time_display_style": "HH:MM:SS",  # Options: HH:MM:SS, HH:MM, Human Readable
     "timer_font_family": "Menlo",  # Options: SF Pro, SF Mono, Menlo (for timer display only)
     "colors": {

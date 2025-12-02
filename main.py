@@ -134,6 +134,7 @@ class SithWindow(NSObject):
         # Load settings from config
         config_data = load_config()
         self.color_animation_enabled = config_data.get("enable_color_animation", True)
+        self.show_status_bar = config_data.get("show_status_bar", True)
         self.time_display_style = config_data.get("time_display_style", "HH:MM:SS")
         self.timer_font_family = config_data.get("timer_font_family", "Menlo")
 
@@ -386,6 +387,10 @@ class SithWindow(NSObject):
         self.status_label.setAccessibilityLabel_("Work status")
         self.status_label.setAccessibilityHelp_("Indicates whether actively tracking work time or idle")
         content_view.addSubview_(self.status_label)
+
+        # Set initial visibility based on show_status_bar setting
+        self.app_label.setHidden_(not self.show_status_bar)
+        self.status_label.setHidden_(not self.show_status_bar)
 
     def updateTimer_(self, timer):
         """Main update loop - detect active app, idle state, update UI."""
@@ -777,6 +782,7 @@ class SithWindow(NSObject):
 
         # Reload settings
         self.color_animation_enabled = config_data.get("enable_color_animation", True)
+        self.show_status_bar = config_data.get("show_status_bar", True)
         self.time_display_style = config_data.get("time_display_style", "HH:MM:SS")
         self.timer_font_family = config_data.get("timer_font_family", "Menlo")
 
@@ -785,6 +791,10 @@ class SithWindow(NSObject):
         self.timer_label.setFont_(get_font(self.timer_font_family, 20, bold=True))
         self.app_label.setFont_(get_font("SF Pro", 9, bold=False))
         self.status_label.setFont_(get_font("SF Pro", 9, bold=True))
+
+        # Update status bar visibility
+        self.app_label.setHidden_(not self.show_status_bar)
+        self.status_label.setHidden_(not self.show_status_bar)
 
         # Schedule label update on next timer tick instead of blocking here
         # (update_labels will be called in the next timer cycle automatically)
