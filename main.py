@@ -18,6 +18,7 @@ from settings import (
     TIMER_FONT,
     STATUS_FONT,
     STATUS_FONT_BOLD,
+    WINDOW_OPACITY
 )
 from utils import *
 
@@ -50,7 +51,9 @@ class FrontAppWindow:
         self.root.geometry(f"{WINDOW_WIDTH}x{WINDOW_HEIGHT}+{x}+{y}")
 
         # Main background frame
-        self.frame = tk.Frame(self.root, bg=INACTIVE_COLOR)
+        self.root.attributes("-alpha", WINDOW_OPACITY)
+
+        self.frame = tk.Frame(self.root, bg=INACTIVE_COLOR, highlightthickness=0, bd=0)
         self.frame.pack(expand=True, fill="both")
 
         # --- Drag-to-move support ---
@@ -71,7 +74,7 @@ class FrontAppWindow:
         self.timer_label.pack(expand=True, fill="both")
 
         # --- Bottom bar ---
-        self.bottom_frame = tk.Frame(self.frame, bg=INACTIVE_COLOR)
+        self.bottom_frame = tk.Frame(self.frame, bg=INACTIVE_COLOR, highlightthickness=0, bd=0)
         self.bottom_frame.pack(side="bottom", fill="x")
 
         self.app_label = tk.Label(

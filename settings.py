@@ -22,9 +22,11 @@ IDLE_THRESHOLD = 2
 # Color settings
 WORKING_COLOR = "#0077ff" 
 INACTIVE_COLOR = "#aa0000"
-TEXT_COLOR = "white"
+TEXT_COLOR = "#f5f5f7" 
+
 
 # Window settings
+WINDOW_OPACITY = 0.9  # 0.0–1.0
 WINDOW_WIDTH = 260
 WINDOW_HEIGHT = 80
 WINDOW_MARGIN_X = 20
