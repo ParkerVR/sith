@@ -14,6 +14,8 @@ from Cocoa import (
     NSMakeRect,
     NSFont,
     NSButton,
+    NSBezelStyleRounded,
+    NSBezelStyleCircular,
     NSScrollView,
     NSView,
 )
@@ -285,7 +287,7 @@ class SettingsController(NSObject):
             # Remove button - circular minus
             remove_btn = NSButton.alloc().initWithFrame_(NSMakeRect(315, y_position, 20, 20))
             remove_btn.setTitle_("-")
-            remove_btn.setBezelStyle_(4)
+            remove_btn.setBezelStyle_(NSBezelStyleCircular)  # Circular button style
             remove_btn.setFont_(get_font(font_family, 12, bold=False))
             remove_btn.setTag_(i)  # Store index as tag
             remove_btn.setTarget_(self)
@@ -310,12 +312,12 @@ class SettingsController(NSObject):
         # Filter out apps already in allowlist and take first 3
         recent_apps = [app for app in recent_apps_all if app not in allowlist][:3]
 
-        # Create buttons for recent apps
+        # Create buttons for recent apps (small size - 28pt height)
         x_pos = 20
         for app_name in recent_apps:
             add_btn = NSButton.alloc().initWithFrame_(NSMakeRect(x_pos, y_position, 100, 28))
             add_btn.setTitle_(app_name)
-            add_btn.setBezelStyle_(1)
+            add_btn.setBezelStyle_(NSBezelStyleRounded)  # Standard rounded button
             add_btn.setFont_(get_font(font_family, 9, bold=False))
             add_btn.setTarget_(self)
             add_btn.setAction_("addApp:")
@@ -326,10 +328,10 @@ class SettingsController(NSObject):
 
         y_position += 28 + 30  # After buttons + spacing
 
-        # Reset to default button
+        # Reset to default button (regular size - 32pt height)
         reset_btn = NSButton.alloc().initWithFrame_(NSMakeRect(20, y_position, 340, 32))
         reset_btn.setTitle_("Reset to Default Settings")
-        reset_btn.setBezelStyle_(1)
+        reset_btn.setBezelStyle_(NSBezelStyleRounded)  # Standard rounded button
         reset_btn.setFont_(get_font(font_family, 11, bold=False))
         reset_btn.setTarget_(self)
         reset_btn.setAction_("resetToDefault:")
@@ -339,10 +341,10 @@ class SettingsController(NSObject):
 
         y_position += 32 + 10  # After button + spacing
 
-        # Open app directory button
+        # Open app directory button (regular size - 32pt height)
         open_dir_btn = NSButton.alloc().initWithFrame_(NSMakeRect(20, y_position, 340, 32))
         open_dir_btn.setTitle_("Open App Directory in Finder")
-        open_dir_btn.setBezelStyle_(1)
+        open_dir_btn.setBezelStyle_(NSBezelStyleRounded)  # Standard rounded button
         open_dir_btn.setFont_(get_font(font_family, 11, bold=False))
         open_dir_btn.setTarget_(self)
         open_dir_btn.setAction_("openAppDirectory:")
