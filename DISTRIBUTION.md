@@ -76,14 +76,13 @@ If you delete the config file, the app will recreate it with default settings on
 1. **Setup environment:**
    ```bash
    python3 -m venv venv
-   source venv/bin/activate  # or: ./venv/bin/activate
-   pip install -r requirements.txt
-   pip install py2app
+   ./venv/bin/python -m pip install -r requirements.txt
+   ./venv/bin/python -m pip install py2app
    ```
 
 2. **Build the .app:**
    ```bash
-   python setup.py py2app
+    ./venv/bin/python setup.py py2app
    ```
 
 3. **Find the app:**
@@ -94,7 +93,7 @@ If you delete the config file, the app will recreate it with default settings on
 If you need to rebuild:
 ```bash
 rm -rf build dist
-python setup.py py2app
+./venv/bin/python setup.py py2app
 ```
 
 ### Running in Development
