@@ -15,6 +15,7 @@ from Cocoa import (
     NSFont,
     NSTextView,
     NSScrollView,
+    NSButton,
 )
 from display_utils import add_glass_effect, create_label, create_text_field, hex_to_nscolor
 from utils import load_config
@@ -88,28 +89,55 @@ def create_settings_window():
 
     y_position -= 50
 
-    # Add allowlist text field - one app per line
+    # Add allowlist section
     label = create_label("App Allowlist:", 20, y_position, 150, 20)
     settings_window.contentView().addSubview_(label)
 
-    # Join allowlist apps with newlines
+    y_position -= 25
+
+    # Display each app with a remove button
     allowlist = current_config.get("allowlist", [])
-    allowlist_text = "\n".join(allowlist)
+    for app_name in allowlist:
+        app_label = create_label(app_name, 30, y_position, 280, 20, font_size=10)
+        settings_window.contentView().addSubview_(app_label)
 
-    # Create multi-line text field
-    scroll_view = NSScrollView.alloc().initWithFrame_(NSMakeRect(20, y_position - 80, 320, 70))
-    scroll_view.setHasVerticalScroller_(True)
-    scroll_view.setBorderType_(1)  # NSBezelBorder
+        # Remove button - circular minus
+        remove_btn = NSButton.alloc().initWithFrame_(NSMakeRect(315, y_position, 20, 20))
+        remove_btn.setTitle_("-")
+        remove_btn.setBezelStyle_(4)  # Circular bezel
+        remove_btn.setFont_(NSFont.fontWithName_size_("Menlo", 12))
+        settings_window.contentView().addSubview_(remove_btn)
 
-    text_view = NSTextView.alloc().initWithFrame_(scroll_view.contentView().bounds())
-    text_view.setString_(allowlist_text)
-    text_view.setFont_(NSFont.fontWithName_size_("Menlo", 10))
-    text_view.setTextColor_(NSColor.whiteColor())
-    text_view.setBackgroundColor_(NSColor.colorWithCalibratedWhite_alpha_(0.2, 0.8))
+        y_position -= 22
 
-    scroll_view.setDocumentView_(text_view)
-    settings_window.contentView().addSubview_(scroll_view)
-    widgets['allowlist_text'] = text_view
+    y_position -= 15
+
+    # Add section for recent apps
+    add_label = create_label("Add app:", 20, y_position, 150, 20)
+    settings_window.contentView().addSubview_(add_label)
+
+    y_position -= 30
+
+    # Get recent apps from summary (apps not in allowlist)
+    from utils import load_summary
+    summary = load_summary()
+    recent_apps = set()
+    for day_data in summary.values():
+        if isinstance(day_data, dict) and "by_app" in day_data:
+            recent_apps.update(day_data["by_app"].keys())
+
+    # Filter out apps already in allowlist
+    recent_apps = [app for app in recent_apps if app not in allowlist][:3]
+
+    # Create buttons for recent apps
+    x_pos = 20
+    for app_name in recent_apps:
+        add_btn = NSButton.alloc().initWithFrame_(NSMakeRect(x_pos, y_position, 100, 28))
+        add_btn.setTitle_(app_name)
+        add_btn.setBezelStyle_(1)
+        add_btn.setFont_(NSFont.fontWithName_size_("Menlo", 9))
+        settings_window.contentView().addSubview_(add_btn)
+        x_pos += 110
 
     # Make sure window doesn't use our delegate
     settings_window.setDelegate_(None)
