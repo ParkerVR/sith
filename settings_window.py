@@ -21,7 +21,7 @@ from Foundation import NSObject, NSTimer
 import objc
 import json
 import subprocess
-from display_utils import add_glass_effect, create_label, create_text_field, hex_to_nscolor, nscolor_to_hex
+from display_utils import add_glass_effect, create_label, create_text_field, hex_to_nscolor, nscolor_to_hex, get_font
 from utils import load_config, CONFIG_PATH, load_summary, DEFAULT_CONFIG, APP_DIR
 
 
@@ -113,15 +113,16 @@ class SettingsController(NSObject):
     def buildUI(self):
         """Build the settings UI."""
         y_position = 20  # Start from top with flipped coordinates
+        font_family = self.config.get("font_family", "SF Pro")
 
         # Title
-        hello_label = create_label("Settings", 20, y_position, 340, 25, bold=True, font_size=18)
+        hello_label = create_label("Settings", 20, y_position, 340, 25, bold=True, font_size=18, font_family=font_family)
         self.content_view.addSubview_(hello_label)
 
         y_position += 40
 
         # Active color picker
-        label = create_label("Active text color:", 20, y_position, 150, 20)
+        label = create_label("Active text color:", 20, y_position, 150, 20, font_family=font_family)
         self.content_view.addSubview_(label)
 
         active_color_well = NSColorWell.alloc().initWithFrame_(NSMakeRect(180, y_position, 60, 25))
@@ -135,7 +136,7 @@ class SettingsController(NSObject):
         y_position += 35
 
         # Idle color picker
-        label = create_label("Idle text color:", 20, y_position, 150, 20)
+        label = create_label("Idle text color:", 20, y_position, 150, 20, font_family=font_family)
         self.content_view.addSubview_(label)
 
         idle_color_well = NSColorWell.alloc().initWithFrame_(NSMakeRect(180, y_position, 60, 25))
@@ -149,10 +150,10 @@ class SettingsController(NSObject):
         y_position += 50
 
         # Idle timeout
-        label = create_label("Idle timeout:", 20, y_position, 150, 20)
+        label = create_label("Idle timeout:", 20, y_position, 150, 20, font_family=font_family)
         self.content_view.addSubview_(label)
 
-        idle_field = create_text_field(str(self.config.get("idle_threshold", 2)), 180, y_position, 60, 22)
+        idle_field = create_text_field(str(self.config.get("idle_threshold", 2)), 180, y_position, 60, 22, font_family=font_family)
         idle_field.setTarget_(self)
         idle_field.setAction_("idleTimeoutChanged:")
         self.content_view.addSubview_(idle_field)
@@ -176,7 +177,7 @@ class SettingsController(NSObject):
         anim_checkbox.setButtonType_(3)  # Switch/checkbox type
         anim_checkbox.setTitle_("Enable color fade animation")
         anim_checkbox.setState_(1 if self.config.get("enable_color_animation", True) else 0)
-        anim_checkbox.setFont_(NSFont.fontWithName_size_("Menlo", 10))
+        anim_checkbox.setFont_(get_font(font_family, 10, bold=False))
         anim_checkbox.setTarget_(self)
         anim_checkbox.setAction_("colorAnimationChanged:")
         self.content_view.addSubview_(anim_checkbox)
@@ -185,7 +186,7 @@ class SettingsController(NSObject):
         y_position += 30
 
         # Time display style dropdown
-        label = create_label("Time display:", 20, y_position, 150, 20)
+        label = create_label("Time display:", 20, y_position, 150, 20, font_family=font_family)
         self.content_view.addSubview_(label)
 
         time_style_popup = NSPopUpButton.alloc().initWithFrame_(NSMakeRect(180, y_position - 2, 160, 26))
@@ -202,6 +203,27 @@ class SettingsController(NSObject):
         time_style_popup.setAction_("timeStyleChanged:")
         self.content_view.addSubview_(time_style_popup)
         self.widgets['time_style'] = time_style_popup
+
+        y_position += 40
+
+        # Font family dropdown
+        label = create_label("Font family:", 20, y_position, 150, 20, font_family=font_family)
+        self.content_view.addSubview_(label)
+
+        font_popup = NSPopUpButton.alloc().initWithFrame_(NSMakeRect(180, y_position - 2, 160, 26))
+        font_popup.addItemWithTitle_("SF Pro")
+        font_popup.addItemWithTitle_("SF Mono")
+        font_popup.addItemWithTitle_("Menlo")
+
+        # Select current font
+        current_font = self.config.get("font_family", "SF Pro")
+        font_index = {"SF Pro": 0, "SF Mono": 1, "Menlo": 2}.get(current_font, 0)
+        font_popup.selectItemAtIndex_(font_index)
+
+        font_popup.setTarget_(self)
+        font_popup.setAction_("fontFamilyChanged:")
+        self.content_view.addSubview_(font_popup)
+        self.widgets['font_family'] = font_popup
 
         y_position += 50
 
@@ -223,8 +245,9 @@ class SettingsController(NSObject):
         # In a real app, you'd track and remove specific views
 
         y_position = self.allowlist_y_start
+        font_family = self.config.get("font_family", "SF Pro")
 
-        label = create_label("App Allowlist:", 20, y_position, 150, 20)
+        label = create_label("App Allowlist:", 20, y_position, 150, 20, font_family=font_family)
         self.content_view.addSubview_(label)
 
         y_position += 25
@@ -232,14 +255,14 @@ class SettingsController(NSObject):
         # Display each app with a remove button
         allowlist = self.config.get("allowlist", [])
         for i, app_name in enumerate(allowlist):
-            app_label = create_label(app_name, 30, y_position, 280, 20, font_size=10)
+            app_label = create_label(app_name, 30, y_position, 280, 20, font_size=10, font_family=font_family)
             self.content_view.addSubview_(app_label)
 
             # Remove button - circular minus
             remove_btn = NSButton.alloc().initWithFrame_(NSMakeRect(315, y_position, 20, 20))
             remove_btn.setTitle_("-")
             remove_btn.setBezelStyle_(4)
-            remove_btn.setFont_(NSFont.fontWithName_size_("Menlo", 12))
+            remove_btn.setFont_(get_font(font_family, 12, bold=False))
             remove_btn.setTag_(i)  # Store index as tag
             remove_btn.setTarget_(self)
             remove_btn.setAction_("removeApp:")
@@ -250,7 +273,7 @@ class SettingsController(NSObject):
         y_position += 15
 
         # Add section for recent apps
-        add_label = create_label("Add app:", 20, y_position, 150, 20)
+        add_label = create_label("Add app:", 20, y_position, 150, 20, font_family=font_family)
         self.content_view.addSubview_(add_label)
 
         y_position += 30
@@ -267,7 +290,7 @@ class SettingsController(NSObject):
             add_btn = NSButton.alloc().initWithFrame_(NSMakeRect(x_pos, y_position, 100, 28))
             add_btn.setTitle_(app_name)
             add_btn.setBezelStyle_(1)
-            add_btn.setFont_(NSFont.fontWithName_size_("Menlo", 9))
+            add_btn.setFont_(get_font(font_family, 9, bold=False))
             add_btn.setTarget_(self)
             add_btn.setAction_("addApp:")
             self.content_view.addSubview_(add_btn)
@@ -279,7 +302,7 @@ class SettingsController(NSObject):
         reset_btn = NSButton.alloc().initWithFrame_(NSMakeRect(20, y_position, 340, 32))
         reset_btn.setTitle_("Reset to Default Settings")
         reset_btn.setBezelStyle_(1)
-        reset_btn.setFont_(NSFont.fontWithName_size_("Menlo", 11))
+        reset_btn.setFont_(get_font(font_family, 11, bold=False))
         reset_btn.setTarget_(self)
         reset_btn.setAction_("resetToDefault:")
         self.content_view.addSubview_(reset_btn)
@@ -290,7 +313,7 @@ class SettingsController(NSObject):
         open_dir_btn = NSButton.alloc().initWithFrame_(NSMakeRect(20, y_position, 340, 32))
         open_dir_btn.setTitle_("Open App Directory in Finder")
         open_dir_btn.setBezelStyle_(1)
-        open_dir_btn.setFont_(NSFont.fontWithName_size_("Menlo", 11))
+        open_dir_btn.setFont_(get_font(font_family, 11, bold=False))
         open_dir_btn.setTarget_(self)
         open_dir_btn.setAction_("openAppDirectory:")
         self.content_view.addSubview_(open_dir_btn)
@@ -363,6 +386,28 @@ class SettingsController(NSObject):
 
         # Save to file
         self.saveConfig()
+
+    @objc.IBAction
+    def fontFamilyChanged_(self, sender):
+        """Handle font family dropdown change."""
+        fonts = ["SF Pro", "SF Mono", "Menlo"]
+        selected_index = sender.indexOfSelectedItem()
+        selected_font = fonts[selected_index]
+
+        self.config["font_family"] = selected_font
+
+        # Update fonts in config dictionary
+        if "fonts" not in self.config:
+            self.config["fonts"] = {}
+        self.config["fonts"]["timer"] = [selected_font, 20, "bold"]
+        self.config["fonts"]["status"] = [selected_font, 9]
+        self.config["fonts"]["status_bold"] = [selected_font, 9, "bold"]
+
+        # Save to file
+        self.saveConfig()
+
+        # Refresh window to show new font
+        self.refreshWindow()
 
     @objc.IBAction
     def addApp_(self, sender):

@@ -63,7 +63,7 @@ from utils import (
     load_config,
     CONFIG_PATH,
 )
-from display_utils import hex_to_nscolor, nscolor_to_hex
+from display_utils import hex_to_nscolor, nscolor_to_hex, get_font
 from summary_window import create_summary_window
 from settings_window import create_settings_controller
 
@@ -81,6 +81,7 @@ WINDOW_HEIGHT = config.WINDOW_HEIGHT
 WINDOW_MARGIN_X = config.WINDOW_MARGIN_X
 WINDOW_MARGIN_Y = config.WINDOW_MARGIN_Y
 UPDATE_INTERVAL = config.UPDATE_INTERVAL
+FONT_FAMILY = config.FONT_FAMILY
 
 # UI layout constants
 LABEL_MARGIN_X = 8  # Horizontal margin from edges for bottom labels
@@ -131,6 +132,7 @@ class SithWindow(NSObject):
         config_data = load_config()
         self.color_animation_enabled = config_data.get("enable_color_animation", True)
         self.time_display_style = config_data.get("time_display_style", "HH:MM:SS")
+        self.font_family = config_data.get("font_family", "SF Pro")
 
         # Drag state
         self.drag_offset = None
@@ -309,7 +311,7 @@ class SithWindow(NSObject):
         timer_rect = NSMakeRect(0, 25, WINDOW_WIDTH, 35)
         self.timer_label = NSTextField.alloc().initWithFrame_(timer_rect)
         self.timer_label.setStringValue_("00:00:00")
-        self.timer_label.setFont_(NSFont.fontWithName_size_("Menlo Bold", 20))
+        self.timer_label.setFont_(get_font(self.font_family, 20, bold=True))
         self.timer_label.setTextColor_(NSColor.whiteColor())
         self.timer_label.setBackgroundColor_(NSColor.clearColor())
         self.timer_label.setBezeled_(False)
@@ -327,7 +329,7 @@ class SithWindow(NSObject):
         app_rect = NSMakeRect(LABEL_MARGIN_X, LABEL_MARGIN_Y, 180, 15)
         self.app_label = NSTextField.alloc().initWithFrame_(app_rect)
         self.app_label.setStringValue_("(starting...)")
-        self.app_label.setFont_(NSFont.fontWithName_size_("Menlo", 9))
+        self.app_label.setFont_(get_font(self.font_family, 9, bold=False))
         self.app_label.setTextColor_(NSColor.whiteColor())
         self.app_label.setBackgroundColor_(NSColor.clearColor())
         self.app_label.setBezeled_(False)
@@ -341,7 +343,7 @@ class SithWindow(NSObject):
         status_rect = NSMakeRect(WINDOW_WIDTH - STATUS_LABEL_WIDTH - LABEL_MARGIN_X, LABEL_MARGIN_Y, STATUS_LABEL_WIDTH, 15)
         self.status_label = NSTextField.alloc().initWithFrame_(status_rect)
         self.status_label.setStringValue_("IDLE")
-        self.status_label.setFont_(NSFont.fontWithName_size_("Menlo Bold", 9))
+        self.status_label.setFont_(get_font(self.font_family, 9, bold=True))
         self.status_label.setTextColor_(NSColor.whiteColor())
         self.status_label.setBackgroundColor_(NSColor.clearColor())
         self.status_label.setBezeled_(False)
@@ -666,7 +668,7 @@ class SithWindow(NSObject):
         text_view.setSelectable_(True)
         text_view.setBackgroundColor_(NSColor.clearColor())
         text_view.setTextColor_(NSColor.whiteColor())
-        text_view.setFont_(NSFont.fontWithName_size_("Menlo", 12))
+        text_view.setFont_(get_font(self.font_family, 12, bold=False))
 
         # Load guide content from file
         try:
@@ -724,6 +726,12 @@ class SithWindow(NSObject):
         # Reload settings
         self.color_animation_enabled = config_data.get("enable_color_animation", True)
         self.time_display_style = config_data.get("time_display_style", "HH:MM:SS")
+        self.font_family = config_data.get("font_family", "SF Pro")
+
+        # Update fonts immediately
+        self.timer_label.setFont_(get_font(self.font_family, 20, bold=True))
+        self.app_label.setFont_(get_font(self.font_family, 9, bold=False))
+        self.status_label.setFont_(get_font(self.font_family, 9, bold=True))
 
         # Schedule label update on next timer tick instead of blocking here
         # (update_labels will be called in the next timer cycle automatically)
@@ -732,8 +740,7 @@ class SithWindow(NSObject):
         """Helper to add a label to the window."""
         label = NSTextField.alloc().initWithFrame_(NSMakeRect(x, y, w, h))
         label.setStringValue_(text)
-        font_name = "Menlo Bold" if bold else "Menlo"
-        label.setFont_(NSFont.fontWithName_size_(font_name, 11))
+        label.setFont_(get_font(self.font_family, 11, bold=bold))
         label.setTextColor_(NSColor.whiteColor())
         label.setBackgroundColor_(NSColor.clearColor())
         label.setBezeled_(False)

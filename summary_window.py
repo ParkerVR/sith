@@ -14,8 +14,8 @@ from Cocoa import (
     NSScrollView,
     NSTextView,
 )
-from display_utils import add_glass_effect
-from utils import format_seconds, human_date, generate_app_bar
+from display_utils import add_glass_effect, get_font
+from utils import format_seconds, human_date, generate_app_bar, load_config
 
 
 def create_summary_window(summary_data, today_key):
@@ -45,13 +45,17 @@ def create_summary_window(summary_data, today_key):
     scroll_view.setAutoresizingMask_(18)
     scroll_view.setDrawsBackground_(False)
 
+    # Load font preference
+    config = load_config()
+    font_family = config.get("font_family", "SF Pro")
+
     # Create text view for summary content
     text_view = NSTextView.alloc().initWithFrame_(NSMakeRect(0, 0, 400, 2000))
     text_view.setEditable_(False)
     text_view.setSelectable_(True)
     text_view.setBackgroundColor_(NSColor.clearColor())
     text_view.setTextColor_(NSColor.whiteColor())
-    text_view.setFont_(NSFont.fontWithName_size_("Menlo", 10))
+    text_view.setFont_(get_font(font_family, 10, bold=False))
 
     # Build summary text
     lines = []

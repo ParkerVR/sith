@@ -6,6 +6,9 @@ from Cocoa import (
     NSColor,
     NSTextField,
     NSFont,
+    NSFontWeightRegular,
+    NSFontWeightBold,
+    NSFontWeightMedium,
     NSMakeRect,
     NSVisualEffectView,
     NSVisualEffectBlendingModeBehindWindow,
@@ -46,12 +49,40 @@ def add_glass_effect(window):
     window.contentView().addSubview_(effect_view)
 
 
-def create_label(text, x, y, w, h, bold=False, font_size=11):
+def get_font(font_family, size, bold=False):
+    """
+    Get NSFont based on font family preference.
+
+    Args:
+        font_family: "SF Pro", "SF Mono", or "Menlo"
+        size: Font size in points
+        bold: Whether to use bold weight
+
+    Returns:
+        NSFont instance
+    """
+    weight = NSFontWeightBold if bold else NSFontWeightRegular
+
+    if font_family == "SF Mono":
+        # Use monospaced system font
+        return NSFont.monospacedSystemFontOfSize_weight_(size, weight)
+    elif font_family == "Menlo":
+        # Use Menlo (legacy monospace)
+        font_name = "Menlo-Bold" if bold else "Menlo"
+        return NSFont.fontWithName_size_(font_name, size) or NSFont.systemFontOfSize_weight_(size, weight)
+    else:  # SF Pro (default)
+        # Use system font (San Francisco)
+        if bold:
+            return NSFont.boldSystemFontOfSize_(size)
+        else:
+            return NSFont.systemFontOfSize_(size)
+
+
+def create_label(text, x, y, w, h, bold=False, font_size=11, font_family="SF Pro"):
     """Create a standard label with common settings."""
     label = NSTextField.alloc().initWithFrame_(NSMakeRect(x, y, w, h))
     label.setStringValue_(text)
-    font_name = "Menlo Bold" if bold else "Menlo"
-    label.setFont_(NSFont.fontWithName_size_(font_name, font_size))
+    label.setFont_(get_font(font_family, font_size, bold))
     label.setTextColor_(NSColor.whiteColor())
     label.setBackgroundColor_(NSColor.clearColor())
     label.setBezeled_(False)
@@ -61,11 +92,11 @@ def create_label(text, x, y, w, h, bold=False, font_size=11):
     return label
 
 
-def create_text_field(value, x, y, w, h, font_size=12):
+def create_text_field(value, x, y, w, h, font_size=12, font_family="SF Pro"):
     """Create a text input field with dark background and white text."""
     field = NSTextField.alloc().initWithFrame_(NSMakeRect(x, y, w, h))
     field.setStringValue_(value)
-    field.setFont_(NSFont.fontWithName_size_("Menlo", font_size))
+    field.setFont_(get_font(font_family, font_size, False))
     field.setTextColor_(NSColor.whiteColor())
     field.setBackgroundColor_(NSColor.colorWithCalibratedWhite_alpha_(0.2, 0.8))
     field.setDrawsBackground_(True)

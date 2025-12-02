@@ -23,6 +23,7 @@ DEFAULT_CONFIG = {
     "idle_threshold": 2,
     "enable_color_animation": True,
     "time_display_style": "HH:MM:SS",  # Options: HH:MM:SS, HH:MM, Human Readable
+    "font_family": "SF Pro",  # Options: SF Pro, SF Mono, Menlo
     "colors": {
         "working": "#0077ff",
         "inactive": "#aa0000",
@@ -39,9 +40,9 @@ DEFAULT_CONFIG = {
     },
     "update_interval": 125,  # 1/8 second for faster updates
     "fonts": {
-        "timer": ["Menlo", 20, "bold"],
-        "status": ["Menlo", 9],
-        "status_bold": ["Menlo", 9, "bold"]
+        "timer": ["SF Pro", 20, "bold"],
+        "status": ["SF Pro", 9],
+        "status_bold": ["SF Pro", 9, "bold"]
     }
 }
 
@@ -87,6 +88,7 @@ def get_config():
     class Config:
         ALLOWLIST = set(config.get("allowlist", DEFAULT_CONFIG["allowlist"]))
         IDLE_THRESHOLD = config.get("idle_threshold", DEFAULT_CONFIG["idle_threshold"])
+        FONT_FAMILY = config.get("font_family", DEFAULT_CONFIG["font_family"])
 
         WORKING_COLOR = config.get("colors", {}).get("working", DEFAULT_CONFIG["colors"]["working"])
         INACTIVE_COLOR = config.get("colors", {}).get("inactive", DEFAULT_CONFIG["colors"]["inactive"])
