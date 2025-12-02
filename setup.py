@@ -17,8 +17,14 @@ OPTIONS = {
         'CFBundleShortVersionString': '1.0.0',
         'LSUIElement': True,  # Makes it a menubar/background app (no dock icon)
         'NSHighResolutionCapable': True,
+        # Privacy strings required for App Store
+        'NSAppleEventsUsageDescription': 'Sith needs to know which app you\'re using to track your work time accurately.',
+        # App Store metadata
+        'LSMinimumSystemVersion': '10.15.0',
+        'LSApplicationCategoryType': 'public.app-category.productivity',
+        'NSHumanReadableCopyright': 'Copyright © 2025. All rights reserved.',
     },
-    'packages': ['objc', 'Cocoa', 'Foundation', 'setproctitle'],
+    'packages': ['objc', 'Cocoa', 'Foundation', 'Quartz', 'setproctitle'],
     'includes': ['settings', 'utils'],
 }
 

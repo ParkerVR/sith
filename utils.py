@@ -45,15 +45,31 @@ DEFAULT_CONFIG = {
     "update_interval": 1000,  # 1 second for efficient updates
 }
 
-# Application directory in user's home
-APP_DIR = Path.home() / ".sith"
+# Application directory - use Application Support for sandbox compatibility
+# Falls back to ~/.sith for backwards compatibility
+APP_DIR = Path.home() / "Library" / "Application Support" / "Sith"
 CONFIG_PATH = APP_DIR / "config.json"
 SUMMARY_PATH = APP_DIR / "summary.json"
+
+# Legacy path for migration
+LEGACY_DIR = Path.home() / ".sith"
 
 
 def ensure_app_directory():
     """Create the application directory if it doesn't exist."""
-    APP_DIR.mkdir(exist_ok=True)
+    APP_DIR.mkdir(parents=True, exist_ok=True)
+
+    # Migrate from legacy directory if it exists
+    if LEGACY_DIR.exists() and not CONFIG_PATH.exists():
+        try:
+            import shutil
+            if (LEGACY_DIR / "config.json").exists():
+                shutil.copy2(LEGACY_DIR / "config.json", CONFIG_PATH)
+            if (LEGACY_DIR / "summary.json").exists():
+                shutil.copy2(LEGACY_DIR / "summary.json", SUMMARY_PATH)
+            print(f"Migrated data from {LEGACY_DIR} to {APP_DIR}")
+        except Exception as e:
+            print(f"Migration failed: {e}")
 
 
 def load_config() -> dict:
@@ -136,21 +152,33 @@ def get_idle_seconds() -> float:
     """
     Returns how many seconds since the last user input
     (mouse/keyboard) according to IOHIDSystem.
+    Uses Quartz API for sandbox compatibility.
     """
     try:
-        out = subprocess.check_output(
-            ["ioreg", "-c", "IOHIDSystem"],
-            text=True,
+        # Use Quartz API instead of ioreg subprocess (sandbox-compatible)
+        import Quartz
+        # Get the idle time in seconds
+        idle_time = Quartz.CGEventSourceSecondsSinceLastEventType(
+            Quartz.kCGEventSourceStateHIDSystemState,
+            Quartz.kCGAnyInputEventType
         )
-        for line in out.splitlines():
-            if "HIDIdleTime" in line:
-                # HIDIdleTime = nanoseconds
-                parts = line.split("=")
-                if len(parts) == 2:
-                    ns = int(parts[1].strip())
-                    return ns / 1_000_000_000.0
+        return float(idle_time)
     except Exception:
-        pass
+        # Fallback to subprocess if Quartz not available (non-sandbox)
+        try:
+            out = subprocess.check_output(
+                ["ioreg", "-c", "IOHIDSystem"],
+                text=True,
+            )
+            for line in out.splitlines():
+                if "HIDIdleTime" in line:
+                    # HIDIdleTime = nanoseconds
+                    parts = line.split("=")
+                    if len(parts) == 2:
+                        ns = int(parts[1].strip())
+                        return ns / 1_000_000_000.0
+        except Exception:
+            pass
     return 0.0
 
 

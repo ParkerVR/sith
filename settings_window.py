@@ -517,7 +517,11 @@ class SettingsController(NSObject):
     @objc.IBAction
     def openAppDirectory_(self, sender):
         """Open the app directory in Finder."""
-        subprocess.run(['open', str(APP_DIR)])
+        # Use NSWorkspace instead of subprocess for sandbox compatibility
+        from Cocoa import NSWorkspace, NSURL
+        workspace = NSWorkspace.sharedWorkspace()
+        url = NSURL.fileURLWithPath_(str(APP_DIR))
+        workspace.openURL_(url)
 
     def saveConfig(self):
         """Save the configuration to JSON file."""
