@@ -78,8 +78,9 @@ def get_font(font_family, size, bold=False):
             return NSFont.systemFontOfSize_(size)
 
 
-def create_label(text, x, y, w, h, bold=False, font_size=11, font_family="SF Pro", use_semantic_color=True):
+def create_label(text, x, y, w, h, bold=False, font_size=11, use_semantic_color=True):
     """Create a standard label with common settings.
+    Always uses SF Pro for UI consistency.
 
     Args:
         use_semantic_color: If True, uses NSColor.labelColor() which adapts to appearance.
@@ -87,7 +88,7 @@ def create_label(text, x, y, w, h, bold=False, font_size=11, font_family="SF Pro
     """
     label = NSTextField.alloc().initWithFrame_(NSMakeRect(x, y, w, h))
     label.setStringValue_(text)
-    label.setFont_(get_font(font_family, font_size, bold))
+    label.setFont_(get_font("SF Pro", font_size, bold))
     # Use semantic color for UI labels (adapts to light/dark mode)
     if use_semantic_color:
         label.setTextColor_(NSColor.labelColor())
@@ -101,11 +102,12 @@ def create_label(text, x, y, w, h, bold=False, font_size=11, font_family="SF Pro
     return label
 
 
-def create_text_field(value, x, y, w, h, font_size=12, font_family="SF Pro"):
-    """Create a text input field with semantic colors."""
+def create_text_field(value, x, y, w, h, font_size=12):
+    """Create a text input field with semantic colors.
+    Always uses SF Pro for UI consistency."""
     field = NSTextField.alloc().initWithFrame_(NSMakeRect(x, y, w, h))
     field.setStringValue_(value)
-    field.setFont_(get_font(font_family, font_size, False))
+    field.setFont_(get_font("SF Pro", font_size, False))
     # Use semantic colors that adapt to appearance
     field.setTextColor_(NSColor.labelColor())
     field.setBackgroundColor_(NSColor.controlBackgroundColor())

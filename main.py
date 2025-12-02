@@ -85,7 +85,6 @@ WINDOW_HEIGHT = config.WINDOW_HEIGHT
 WINDOW_MARGIN_X = config.WINDOW_MARGIN_X
 WINDOW_MARGIN_Y = config.WINDOW_MARGIN_Y
 UPDATE_INTERVAL = config.UPDATE_INTERVAL
-FONT_FAMILY = config.FONT_FAMILY
 
 # UI layout constants
 LABEL_MARGIN_X = 8  # Horizontal margin from edges for bottom labels
@@ -136,7 +135,7 @@ class SithWindow(NSObject):
         config_data = load_config()
         self.color_animation_enabled = config_data.get("enable_color_animation", True)
         self.time_display_style = config_data.get("time_display_style", "HH:MM:SS")
-        self.font_family = config_data.get("font_family", "SF Pro")
+        self.timer_font_family = config_data.get("timer_font_family", "Menlo")
 
         # Drag state
         self.drag_offset = None
@@ -327,10 +326,11 @@ class SithWindow(NSObject):
         # Timer label (large, centered)
         # NOTE: Timer uses custom colors (not semantic) as a core feature -
         # colors are user-configurable and change based on work state
+        # Timer font is configurable in settings
         timer_rect = NSMakeRect(0, 25, WINDOW_WIDTH, 35)
         self.timer_label = NSTextField.alloc().initWithFrame_(timer_rect)
         self.timer_label.setStringValue_("00:00:00")
-        self.timer_label.setFont_(get_font(self.font_family, 20, bold=True))
+        self.timer_label.setFont_(get_font(self.timer_font_family, 20, bold=True))
         # Initial color - will be updated by updateTimer_ based on work state
         self.timer_label.setTextColor_(NSColor.whiteColor())
         self.timer_label.setBackgroundColor_(NSColor.clearColor())
@@ -350,10 +350,11 @@ class SithWindow(NSObject):
 
         # App label (bottom left, small)
         # NOTE: Uses same custom color system as timer for visual consistency
+        # Always uses SF Pro for UI consistency
         app_rect = NSMakeRect(LABEL_MARGIN_X, LABEL_MARGIN_Y, 180, 15)
         self.app_label = NSTextField.alloc().initWithFrame_(app_rect)
         self.app_label.setStringValue_("(starting...)")
-        self.app_label.setFont_(get_font(self.font_family, 9, bold=False))
+        self.app_label.setFont_(get_font("SF Pro", 9, bold=False))
         self.app_label.setTextColor_(NSColor.whiteColor())
         self.app_label.setBackgroundColor_(NSColor.clearColor())
         self.app_label.setBezeled_(False)
@@ -368,10 +369,11 @@ class SithWindow(NSObject):
 
         # Status label (bottom right, small)
         # NOTE: Uses same custom color system as timer for visual consistency
+        # Always uses SF Pro for UI consistency
         status_rect = NSMakeRect(WINDOW_WIDTH - STATUS_LABEL_WIDTH - LABEL_MARGIN_X, LABEL_MARGIN_Y, STATUS_LABEL_WIDTH, 15)
         self.status_label = NSTextField.alloc().initWithFrame_(status_rect)
         self.status_label.setStringValue_("IDLE")
-        self.status_label.setFont_(get_font(self.font_family, 9, bold=True))
+        self.status_label.setFont_(get_font("SF Pro", 9, bold=True))
         self.status_label.setTextColor_(NSColor.whiteColor())
         self.status_label.setBackgroundColor_(NSColor.clearColor())
         self.status_label.setBezeled_(False)
@@ -776,12 +778,13 @@ class SithWindow(NSObject):
         # Reload settings
         self.color_animation_enabled = config_data.get("enable_color_animation", True)
         self.time_display_style = config_data.get("time_display_style", "HH:MM:SS")
-        self.font_family = config_data.get("font_family", "SF Pro")
+        self.timer_font_family = config_data.get("timer_font_family", "Menlo")
 
         # Update fonts immediately
-        self.timer_label.setFont_(get_font(self.font_family, 20, bold=True))
-        self.app_label.setFont_(get_font(self.font_family, 9, bold=False))
-        self.status_label.setFont_(get_font(self.font_family, 9, bold=True))
+        # Timer uses configurable font, UI elements always use SF Pro
+        self.timer_label.setFont_(get_font(self.timer_font_family, 20, bold=True))
+        self.app_label.setFont_(get_font("SF Pro", 9, bold=False))
+        self.status_label.setFont_(get_font("SF Pro", 9, bold=True))
 
         # Schedule label update on next timer tick instead of blocking here
         # (update_labels will be called in the next timer cycle automatically)

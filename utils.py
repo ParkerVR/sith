@@ -23,7 +23,7 @@ DEFAULT_CONFIG = {
     "idle_threshold": 2,
     "enable_color_animation": True,
     "time_display_style": "HH:MM:SS",  # Options: HH:MM:SS, HH:MM, Human Readable
-    "font_family": "SF Pro",  # Options: SF Pro, SF Mono, Menlo
+    "timer_font_family": "Menlo",  # Options: SF Pro, SF Mono, Menlo (for timer display only)
     "colors": {
         "working": "#0077ff",
         "inactive": "#aa0000",
@@ -42,11 +42,6 @@ DEFAULT_CONFIG = {
         "margin_y": 60
     },
     "update_interval": 1000,  # 1 second for efficient updates
-    "fonts": {
-        "timer": ["SF Pro", 20, "bold"],
-        "status": ["SF Pro", 9],
-        "status_bold": ["SF Pro", 9, "bold"]
-    }
 }
 
 # Application directory in user's home
@@ -91,7 +86,7 @@ def get_config():
     class Config:
         ALLOWLIST = set(config.get("allowlist", DEFAULT_CONFIG["allowlist"]))
         IDLE_THRESHOLD = config.get("idle_threshold", DEFAULT_CONFIG["idle_threshold"])
-        FONT_FAMILY = config.get("font_family", DEFAULT_CONFIG["font_family"])
+        TIMER_FONT_FAMILY = config.get("timer_font_family", DEFAULT_CONFIG["timer_font_family"])
 
         WORKING_COLOR = config.get("colors", {}).get("working", DEFAULT_CONFIG["colors"]["working"])
         INACTIVE_COLOR = config.get("colors", {}).get("inactive", DEFAULT_CONFIG["colors"]["inactive"])
@@ -106,10 +101,6 @@ def get_config():
         WINDOW_MARGIN_Y = config.get("window", {}).get("margin_y", DEFAULT_CONFIG["window"]["margin_y"])
 
         UPDATE_INTERVAL = config.get("update_interval", DEFAULT_CONFIG["update_interval"])
-
-        TIMER_FONT = tuple(config.get("fonts", {}).get("timer", DEFAULT_CONFIG["fonts"]["timer"]))
-        STATUS_FONT = tuple(config.get("fonts", {}).get("status", DEFAULT_CONFIG["fonts"]["status"]))
-        STATUS_FONT_BOLD = tuple(config.get("fonts", {}).get("status_bold", DEFAULT_CONFIG["fonts"]["status_bold"]))
 
     return Config
 
