@@ -182,6 +182,13 @@ class SithWindow(NSObject):
         settings_item.setTarget_(self)
         self.menu.addItem_(settings_item)
 
+        # Guide menu item
+        guide_item = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(
+            "Guide", "showGuide:", ""
+        )
+        guide_item.setTarget_(self)
+        self.menu.addItem_(guide_item)
+
         # Reset Timer menu item
         reset_item = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(
             "Reset Timer", "resetTimer:", ""
@@ -324,6 +331,137 @@ class SithWindow(NSObject):
         """Reset the session timer to zero."""
         self.worked_seconds = 0
         self.timer_label.setStringValue_(format_seconds(0))
+
+    def showGuide_(self, sender):
+        """Show the user guide window."""
+        guide_window = self.create_guide_window()
+
+        # Keep reference to prevent deallocation and show window
+        self.summary_windows.append(guide_window)
+        guide_window.makeKeyAndOrderFront_(None)
+
+    def create_guide_window(self):
+        """Create and return the guide window."""
+        # Create guide window with close button
+        guide_rect = NSMakeRect(100, 100, 500, 600)
+        guide_window = NSWindow.alloc().initWithContentRect_styleMask_backing_defer_(
+            guide_rect,
+            NSWindowStyleMaskTitled | NSWindowStyleMaskClosable,
+            NSBackingStoreBuffered,
+            False,
+        )
+
+        # Configure window
+        guide_window.setTitle_("Sith Guide")
+        guide_window.setLevel_(NSFloatingWindowLevel)
+        guide_window.setBackgroundColor_(NSColor.colorWithCalibratedWhite_alpha_(0.2, 0.95))
+
+        # Add glass effect
+        from display_utils import add_glass_effect
+        add_glass_effect(guide_window)
+
+        # Create scroll view for content
+        scroll_rect = guide_window.contentView().bounds()
+        scroll_view = NSScrollView.alloc().initWithFrame_(scroll_rect)
+        scroll_view.setHasVerticalScroller_(True)
+        scroll_view.setHasHorizontalScroller_(False)
+        scroll_view.setAutoresizingMask_(18)
+        scroll_view.setDrawsBackground_(False)
+
+        # Create text view for guide content
+        text_view = NSTextView.alloc().initWithFrame_(NSMakeRect(0, 0, 480, 2000))
+        text_view.setEditable_(False)
+        text_view.setSelectable_(True)
+        text_view.setBackgroundColor_(NSColor.clearColor())
+        text_view.setTextColor_(NSColor.whiteColor())
+        text_view.setFont_(NSFont.fontWithName_size_("Menlo", 12))
+
+        # Guide content
+        guide_text = """Welcome to Sith!
+
+A simple time tracker that helps you stay aware of how you spend your time on your computer.
+
+═══════════════════════════════════════════
+
+🎯 What Does It Do?
+
+Sith quietly sits in the corner of your screen, tracking time spent in the apps you choose. It helps you understand your work patterns without being intrusive.
+
+═══════════════════════════════════════════
+
+⚙️  Getting Started
+
+1. Right-click anywhere on the timer window
+2. Choose "Settings" from the menu
+3. Add the apps you want to track
+4. That's it! Sith will now track time in those apps
+
+═══════════════════════════════════════════
+
+📊 Understanding the Display
+
+• Timer: Shows total time tracked today
+• App Name: The current app you're using
+• Status: ACTIVE (tracking) or IDLE (paused)
+
+Colors:
+• Active Color: When you're working in a tracked app
+• Idle Color: When you're idle or in other apps
+
+═══════════════════════════════════════════
+
+🔧 Settings Explained
+
+App Allowlist:
+The apps you want to track time for. Only time spent in these apps counts toward your total.
+
+Idle Timeout:
+How long to wait before considering you idle. If you don't touch the mouse/keyboard for this time, tracking pauses.
+
+Colors:
+Customize how the timer looks when active vs. idle.
+
+Recent Apps:
+Quick buttons to add apps you've used recently.
+
+═══════════════════════════════════════════
+
+💡 Tips & Tricks
+
+• Right-click for quick access to all features
+• Use "Reset Timer" to start fresh anytime
+• Check "Work Summary" to see your daily history
+• The timer saves automatically - no need to worry!
+• Drag the window to position it wherever you like
+
+═══════════════════════════════════════════
+
+📁 Your Data
+
+All your data is stored locally in:
+~/.sith/
+
+• config.json - Your settings
+• summary.json - Your time tracking history
+
+Click "Open App Directory in Finder" in Settings to access these files.
+
+═══════════════════════════════════════════
+
+Questions?
+
+Sith is designed to be simple and stay out of your way. Just add your apps, and let it track!
+"""
+
+        text_view.setString_(guide_text)
+
+        scroll_view.setDocumentView_(text_view)
+        guide_window.contentView().addSubview_(scroll_view)
+
+        # Set window properties
+        guide_window.setReleasedWhenClosed_(False)
+
+        return guide_window
 
     def track_recent_app(self, app_name):
         """Track recently seen app for quick-add suggestions."""

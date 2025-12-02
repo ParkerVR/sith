@@ -20,8 +20,9 @@ from Cocoa import (
 from Foundation import NSObject, NSTimer
 import objc
 import json
+import subprocess
 from display_utils import add_glass_effect, create_label, create_text_field, hex_to_nscolor, nscolor_to_hex
-from utils import load_config, CONFIG_PATH, load_summary, DEFAULT_CONFIG
+from utils import load_config, CONFIG_PATH, load_summary, DEFAULT_CONFIG, APP_DIR
 
 
 class FlippedView(NSView):
@@ -249,6 +250,17 @@ class SettingsController(NSObject):
         reset_btn.setAction_("resetToDefault:")
         self.content_view.addSubview_(reset_btn)
 
+        y_position += 32 + 10  # After button + spacing
+
+        # Open app directory button
+        open_dir_btn = NSButton.alloc().initWithFrame_(NSMakeRect(20, y_position, 340, 32))
+        open_dir_btn.setTitle_("Open App Directory in Finder")
+        open_dir_btn.setBezelStyle_(1)
+        open_dir_btn.setFont_(NSFont.fontWithName_size_("Menlo", 11))
+        open_dir_btn.setTarget_(self)
+        open_dir_btn.setAction_("openAppDirectory:")
+        self.content_view.addSubview_(open_dir_btn)
+
         # Return final y position (after button height)
         return y_position + 32
 
@@ -344,6 +356,11 @@ class SettingsController(NSObject):
 
         # Rebuild UI to show default settings
         self.refreshWindow()
+
+    @objc.IBAction
+    def openAppDirectory_(self, sender):
+        """Open the app directory in Finder."""
+        subprocess.run(['open', str(APP_DIR)])
 
     def saveConfig(self):
         """Save the configuration to JSON file."""
