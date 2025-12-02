@@ -30,8 +30,13 @@ class FrontAppWindow:
         # Timer + summary state
         self.worked_seconds = 0
         self.is_working = False
+        self.current_app = None
         self.summary = load_summary()
         self.today = today_key()
+
+        # Initialize today's entry if needed
+        if self.today not in self.summary:
+            self.summary[self.today] = {"total": 0, "by_app": {}}
 
         # Always on top; native HUD vibe
         self.root.attributes("-topmost", True)
@@ -144,6 +149,13 @@ class FrontAppWindow:
 
         if self.is_working:
             self.worked_seconds += 1
+            self.current_app = app_name
+
+            # Update today's summary
+            self.summary[self.today]["total"] += 1
+            if app_name not in self.summary[self.today]["by_app"]:
+                self.summary[self.today]["by_app"][app_name] = 0
+            self.summary[self.today]["by_app"][app_name] += 1
 
         # Pick background
         bg = WORKING_COLOR if self.is_working else INACTIVE_COLOR
@@ -176,7 +188,6 @@ class FrontAppWindow:
     # Summary persistence + shutdown
     # ------------------------------------------------------------
     def on_close(self):
-        self.summary[self.today] = self.worked_seconds
         save_summary(self.summary)
         self.root.destroy()
 
@@ -184,12 +195,10 @@ class FrontAppWindow:
     # Summary window
     # ------------------------------------------------------------
     def show_summary_window(self):
-        self.summary[self.today] = self.worked_seconds
-
         win = tk.Toplevel(self.root)
         win.title("Work Summary")
         win.attributes("-topmost", True)
-        win.geometry("280x260")
+        win.geometry("380x400")
         win.configure(bg=INACTIVE_COLOR)
 
         header = tk.Label(
@@ -202,20 +211,36 @@ class FrontAppWindow:
         )
         header.pack()
 
-        frame = tk.Frame(win, bg=INACTIVE_COLOR)
-        frame.pack(expand=True, fill="both", padx=10, pady=10)
+        # Create a scrollable frame
+        canvas = tk.Canvas(win, bg=INACTIVE_COLOR, highlightthickness=0)
+        scrollbar = tk.Scrollbar(win, orient="vertical", command=canvas.yview)
+        scrollable_frame = tk.Frame(canvas, bg=INACTIVE_COLOR)
 
-        # Sort entries by date
-        for day in sorted(self.summary.keys()):
-            total_s = self.summary[day]
+        scrollable_frame.bind(
+            "<Configure>",
+            lambda _: canvas.configure(scrollregion=canvas.bbox("all"))
+        )
 
-            row = tk.Frame(frame, bg=INACTIVE_COLOR)
-            row.pack(anchor="w", fill="x", pady=2)
+        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+        canvas.configure(yscrollcommand=scrollbar.set)
+
+        canvas.pack(side="left", fill="both", expand=True, padx=10, pady=10)
+        scrollbar.pack(side="right", fill="y")
+
+        # Sort entries by date (most recent first)
+        for day in sorted(self.summary.keys(), reverse=True):
+            day_data = self.summary[day]
+            total_s = day_data["total"]
+            by_app = day_data.get("by_app", {})
+
+            # Date header with total
+            row = tk.Frame(scrollable_frame, bg=INACTIVE_COLOR)
+            row.pack(anchor="w", fill="x", pady=(8, 2))
 
             date_label = tk.Label(
                 row,
                 text=human_date(day),
-                font=STATUS_FONT,
+                font=STATUS_FONT_BOLD if day == self.today else STATUS_FONT,
                 bg=INACTIVE_COLOR,
                 fg=TEXT_COLOR,
                 width=14,
@@ -232,6 +257,35 @@ class FrontAppWindow:
                 anchor="e"
             )
             time_label.pack(side="right", expand=True)
+
+            # Per-app breakdown (indented)
+            if by_app:
+                for app_name in sorted(by_app.keys()):
+                    app_seconds = by_app[app_name]
+
+                    app_row = tk.Frame(scrollable_frame, bg=INACTIVE_COLOR)
+                    app_row.pack(anchor="w", fill="x", padx=(20, 0), pady=1)
+
+                    app_label = tk.Label(
+                        app_row,
+                        text=f"  {app_name}",
+                        font=STATUS_FONT,
+                        bg=INACTIVE_COLOR,
+                        fg=TEXT_COLOR,
+                        width=16,
+                        anchor="w"
+                    )
+                    app_label.pack(side="left")
+
+                    app_time_label = tk.Label(
+                        app_row,
+                        text=format_seconds(app_seconds),
+                        font=STATUS_FONT,
+                        bg=INACTIVE_COLOR,
+                        fg=TEXT_COLOR,
+                        anchor="e"
+                    )
+                    app_time_label.pack(side="right", expand=True)
             
     def run(self):
         self.root.mainloop()

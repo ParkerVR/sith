@@ -17,7 +17,7 @@ ALLOWLIST = {
 }
 
 # Idle threshold in seconds
-IDLE_THRESHOLD = 10
+IDLE_THRESHOLD = 2
 
 # Color settings
 WORKING_COLOR = "#0077ff" 

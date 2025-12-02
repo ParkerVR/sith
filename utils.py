@@ -12,17 +12,15 @@ from settings import SUMMARY_PATH
 def today_key() -> str:
     return datetime.date.today().isoformat()
 
-def load_summary() -> dict[str, int]:
+def load_summary() -> dict:
     if not SUMMARY_PATH.exists():
         return {}
     try:
-        data = json.loads(SUMMARY_PATH.read_text())
-        # ensure int values
-        return {k: int(v) for k, v in data.items()}
+        return json.loads(SUMMARY_PATH.read_text())
     except Exception:
         return {}
 
-def save_summary(data: dict[str, int]) -> None:
+def save_summary(data: dict) -> None:
     SUMMARY_PATH.write_text(json.dumps(data, indent=2))
 
 def human_date(key: str) -> str:
