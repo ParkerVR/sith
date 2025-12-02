@@ -326,6 +326,203 @@ class WorkClockWindow(NSObject):
         # Update label colors immediately
         self.update_labels()
 
+    def showSettings_(self, sender):
+        """Show settings window with native UI controls."""
+        # Create settings window - exactly like summary window
+        settings_rect = NSMakeRect(100, 100, 520, 480)
+        settings_window = NSWindow.alloc().initWithContentRect_styleMask_backing_defer_(
+            settings_rect,
+            NSWindowStyleMaskTitled | NSWindowStyleMaskClosable,
+            NSBackingStoreBuffered,
+            False,
+        )
+
+        # Configure window
+        settings_window.setTitle_("Settings")
+        settings_window.setLevel_(NSFloatingWindowLevel)
+        settings_window.setBackgroundColor_(NSColor.colorWithCalibratedWhite_alpha_(0.2, 0.95))
+
+        # Add glass effect
+        effect_view = NSVisualEffectView.alloc().initWithFrame_(
+            settings_window.contentView().bounds()
+        )
+        effect_view.setMaterial_(NSVisualEffectMaterialHUDWindow)
+        effect_view.setBlendingMode_(NSVisualEffectBlendingModeBehindWindow)
+        effect_view.setState_(1)
+        effect_view.setAutoresizingMask_(18)
+        settings_window.contentView().addSubview_(effect_view)
+
+        # Load current config
+        current_config = load_config()
+
+        # Store UI elements as window attributes for later access
+        settings_window.settings_widgets = {}
+
+        y_pos = 420
+
+        # === Colors Section ===
+        label = NSTextField.alloc().initWithFrame_(NSMakeRect(20, y_pos, 480, 20))
+        label.setStringValue_("Colors")
+        label.setFont_(NSFont.fontWithName_size_("Menlo Bold", 11))
+        label.setTextColor_(NSColor.whiteColor())
+        label.setBackgroundColor_(NSColor.clearColor())
+        label.setBezeled_(False)
+        label.setDrawsBackground_(False)
+        label.setEditable_(False)
+        label.setSelectable_(False)
+        settings_window.contentView().addSubview_(label)
+        y_pos -= 30
+
+        # Active color
+        label = NSTextField.alloc().initWithFrame_(NSMakeRect(20, y_pos, 150, 20))
+        label.setStringValue_("Active Text Color:")
+        label.setFont_(NSFont.fontWithName_size_("Menlo", 11))
+        label.setTextColor_(NSColor.whiteColor())
+        label.setBackgroundColor_(NSColor.clearColor())
+        label.setBezeled_(False)
+        label.setDrawsBackground_(False)
+        label.setEditable_(False)
+        label.setSelectable_(False)
+        settings_window.contentView().addSubview_(label)
+
+        active_color_well = NSColorWell.alloc().initWithFrame_(NSMakeRect(180, y_pos, 60, 25))
+        active_color = self.hex_to_nscolor(current_config.get("colors", {}).get("glass_working", "#00d4ff"))
+        active_color_well.setColor_(active_color)
+        settings_window.contentView().addSubview_(active_color_well)
+        settings_window.settings_widgets['active_color'] = active_color_well
+        y_pos -= 35
+
+        # Inactive color
+        label = NSTextField.alloc().initWithFrame_(NSMakeRect(20, y_pos, 150, 20))
+        label.setStringValue_("Inactive Text Color:")
+        label.setFont_(NSFont.fontWithName_size_("Menlo", 11))
+        label.setTextColor_(NSColor.whiteColor())
+        label.setBackgroundColor_(NSColor.clearColor())
+        label.setBezeled_(False)
+        label.setDrawsBackground_(False)
+        label.setEditable_(False)
+        label.setSelectable_(False)
+        settings_window.contentView().addSubview_(label)
+
+        inactive_color_well = NSColorWell.alloc().initWithFrame_(NSMakeRect(180, y_pos, 60, 25))
+        inactive_color = self.hex_to_nscolor(current_config.get("colors", {}).get("glass_inactive", "#ffffff"))
+        inactive_color_well.setColor_(inactive_color)
+        settings_window.contentView().addSubview_(inactive_color_well)
+        settings_window.settings_widgets['inactive_color'] = inactive_color_well
+        y_pos -= 45
+
+        # === Idle Timeout Section ===
+        label = NSTextField.alloc().initWithFrame_(NSMakeRect(20, y_pos, 480, 20))
+        label.setStringValue_("Idle Timeout")
+        label.setFont_(NSFont.fontWithName_size_("Menlo Bold", 11))
+        label.setTextColor_(NSColor.whiteColor())
+        label.setBackgroundColor_(NSColor.clearColor())
+        label.setBezeled_(False)
+        label.setDrawsBackground_(False)
+        label.setEditable_(False)
+        label.setSelectable_(False)
+        settings_window.contentView().addSubview_(label)
+        y_pos -= 30
+
+        label = NSTextField.alloc().initWithFrame_(NSMakeRect(20, y_pos, 150, 20))
+        label.setStringValue_("Idle after (seconds):")
+        label.setFont_(NSFont.fontWithName_size_("Menlo", 11))
+        label.setTextColor_(NSColor.whiteColor())
+        label.setBackgroundColor_(NSColor.clearColor())
+        label.setBezeled_(False)
+        label.setDrawsBackground_(False)
+        label.setEditable_(False)
+        label.setSelectable_(False)
+        settings_window.contentView().addSubview_(label)
+
+        idle_field = NSTextField.alloc().initWithFrame_(NSMakeRect(180, y_pos, 60, 22))
+        idle_field.setStringValue_(str(current_config.get("idle_threshold", 2)))
+        idle_field.setFont_(NSFont.fontWithName_size_("Menlo", 12))
+        idle_field.setTextColor_(NSColor.blackColor())
+        settings_window.contentView().addSubview_(idle_field)
+        settings_window.settings_widgets['idle_field'] = idle_field
+        y_pos -= 45
+
+        # === App Allowlist Section ===
+        label = NSTextField.alloc().initWithFrame_(NSMakeRect(20, y_pos, 480, 20))
+        label.setStringValue_("Tracked Applications")
+        label.setFont_(NSFont.fontWithName_size_("Menlo Bold", 11))
+        label.setTextColor_(NSColor.whiteColor())
+        label.setBackgroundColor_(NSColor.clearColor())
+        label.setBezeled_(False)
+        label.setDrawsBackground_(False)
+        label.setEditable_(False)
+        label.setSelectable_(False)
+        settings_window.contentView().addSubview_(label)
+        y_pos -= 25
+
+        # Get current allowlist
+        allowlist = current_config.get("allowlist", [])
+
+        # Create text view for allowlist
+        allowlist_rect = NSMakeRect(20, y_pos - 120, 320, 140)
+        allowlist_scroll = NSScrollView.alloc().initWithFrame_(allowlist_rect)
+        allowlist_scroll.setHasVerticalScroller_(True)
+        allowlist_scroll.setBorderType_(NSBezelBorder)
+
+        allowlist_text = NSTextView.alloc().initWithFrame_(allowlist_scroll.contentView().bounds())
+        allowlist_text.setString_("\n".join(allowlist))
+        allowlist_text.setFont_(NSFont.fontWithName_size_("Menlo", 11))
+        allowlist_text.setTextColor_(NSColor.whiteColor())
+        allowlist_text.setBackgroundColor_(NSColor.colorWithCalibratedWhite_alpha_(0.1, 0.9))
+        allowlist_text.setEditable_(True)
+
+        allowlist_scroll.setDocumentView_(allowlist_text)
+        settings_window.contentView().addSubview_(allowlist_scroll)
+        settings_window.settings_widgets['allowlist_text'] = allowlist_text
+
+        # Add button to add current app
+        add_current_btn = NSButton.alloc().initWithFrame_(NSMakeRect(350, y_pos - 30, 150, 28))
+        add_current_btn.setTitle_("Add Current App")
+        add_current_btn.setBezelStyle_(NSBezelStyleRounded)
+        add_current_btn.setTarget_(self)
+        add_current_btn.setAction_("addCurrentApp:")
+        settings_window.contentView().addSubview_(add_current_btn)
+
+        # Help text
+        help_text = NSTextField.alloc().initWithFrame_(NSMakeRect(350, y_pos - 90, 150, 50))
+        help_text.setStringValue_("Add apps by name,\none per line.\n\nCurrent app shown\nin main HUD.")
+        help_text.setFont_(NSFont.fontWithName_size_("Menlo", 9))
+        help_text.setTextColor_(NSColor.colorWithCalibratedWhite_alpha_(0.6, 1.0))
+        help_text.setBackgroundColor_(NSColor.clearColor())
+        help_text.setBezeled_(False)
+        help_text.setDrawsBackground_(False)
+        help_text.setEditable_(False)
+        help_text.setSelectable_(False)
+        settings_window.contentView().addSubview_(help_text)
+
+        # === Buttons ===
+        # Save button
+        save_button = NSButton.alloc().initWithFrame_(NSMakeRect(380, 15, 120, 32))
+        save_button.setTitle_("Save & Restart")
+        save_button.setBezelStyle_(NSBezelStyleRounded)
+        save_button.setTarget_(self)
+        save_button.setAction_("saveSettings:")
+        settings_window.contentView().addSubview_(save_button)
+
+        # Cancel button
+        cancel_button = NSButton.alloc().initWithFrame_(NSMakeRect(250, 15, 120, 32))
+        cancel_button.setTitle_("Cancel")
+        cancel_button.setBezelStyle_(NSBezelStyleRounded)
+        cancel_button.setTarget_(self)
+        cancel_button.setAction_("cancelSettings:")
+        settings_window.contentView().addSubview_(cancel_button)
+
+        # Make sure settings window doesn't use our delegate
+        settings_window.setDelegate_(None)
+
+        # Set releasedWhenClosed to False to prevent crashes
+        settings_window.setReleasedWhenClosed_(False)
+
+        # Keep reference to prevent deallocation and show window
+        self.summary_windows.append(settings_window)
+        settings_window.makeKeyAndOrderFront_(None)
+
     def add_label(self, window, text, x, y, w, h, bold=False):
         """Helper to add a label to the window."""
         label = NSTextField.alloc().initWithFrame_(NSMakeRect(x, y, w, h))
