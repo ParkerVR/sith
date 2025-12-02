@@ -77,12 +77,11 @@ class SettingsController(NSObject):
         self.scroll_view.setAutoresizingMask_(18)  # Width and height resizable
         self.scroll_view.setDrawsBackground_(False)
 
-        # Create content view with enough height for all elements
-        # We'll calculate the needed height based on number of allowlist items
+        # Create content view with estimated height (will be adjusted after building UI)
         allowlist = self.config.get("allowlist", [])
-        # Base height (450) + allowlist items (22 each) + buffer (150 for recent apps section)
-        content_height = 450 + len(allowlist) * 22 + 150
-        content_rect = NSMakeRect(0, 0, 380, max(content_height, 500))
+        # Estimate: base (160) + allowlist items (22 each) + buffer (100 for recent apps section)
+        estimated_height = 160 + len(allowlist) * 22 + 100
+        content_rect = NSMakeRect(0, 0, 380, max(estimated_height, 500))
         self.content_view = FlippedView.alloc().initWithFrame_(content_rect)
 
         self.scroll_view.setDocumentView_(self.content_view)
@@ -159,10 +158,17 @@ class SettingsController(NSObject):
 
         # Allowlist section
         self.allowlist_y_start = y_position
-        self.rebuildAllowlist()
+        final_y = self.rebuildAllowlist()
+
+        # Adjust content view height to actual content with some bottom padding
+        actual_height = final_y + 40  # 40px bottom padding
+        if self.content_view.frame().size.height != actual_height:
+            content_rect = NSMakeRect(0, 0, 380, actual_height)
+            self.content_view.setFrame_(content_rect)
 
     def rebuildAllowlist(self):
-        """Rebuild the allowlist section (called when list changes)."""
+        """Rebuild the allowlist section (called when list changes).
+        Returns the final y position after all elements are added."""
         # Remove all subviews in the allowlist area (we'll rebuild)
         # For simplicity, we'll just rebuild the entire window content
         # In a real app, you'd track and remove specific views
@@ -217,6 +223,9 @@ class SettingsController(NSObject):
             add_btn.setAction_("addApp:")
             self.content_view.addSubview_(add_btn)
             x_pos += 110
+
+        # Return final y position (after button height)
+        return y_position + 28
 
     @objc.IBAction
     def colorChanged_(self, sender):
@@ -323,15 +332,7 @@ class SettingsController(NSObject):
         for view in list(self.content_view.subviews()):
             view.removeFromSuperview()
 
-        # Recalculate content height based on allowlist size
-        allowlist = self.config.get("allowlist", [])
-        content_height = 450 + len(allowlist) * 22 + 150
-        content_rect = NSMakeRect(0, 0, 380, max(content_height, 500))
-
-        # Update content view frame
-        self.content_view.setFrame_(content_rect)
-
-        # Rebuild UI with fresh config
+        # Rebuild UI with fresh config (this will resize content view dynamically)
         self.buildUI()
 
         # Force window to redisplay
