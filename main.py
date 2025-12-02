@@ -300,11 +300,20 @@ class WorkClockWindow(NSObject):
 
     def showSettings2_(self, sender):
         """Show settings window."""
-        settings_window = create_settings_window()
+        print("showSettings2_ called")
+        try:
+            settings_window, widgets = create_settings_window()
+            print(f"Settings window created: {settings_window}")
 
-        # Keep reference to prevent deallocation and show window
-        self.summary_windows.append(settings_window)
-        settings_window.makeKeyAndOrderFront_(None)
+            # Keep reference to prevent deallocation and show window
+            self.summary_windows.append(settings_window)
+            print("About to show window")
+            settings_window.makeKeyAndOrderFront_(None)
+            print("Window shown")
+        except Exception as e:
+            print(f"Error creating settings window: {e}")
+            import traceback
+            traceback.print_exc()
 
     def showSettings_(self, sender):
         """Show settings window with native UI controls."""

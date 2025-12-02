@@ -18,7 +18,11 @@ from utils import load_config
 
 
 def create_settings_window():
-    """Create and return a settings window."""
+    """Create and return a settings window and its widgets.
+
+    Returns:
+        tuple: (settings_window, widgets_dict)
+    """
     # Create window with close button
     settings_rect = NSMakeRect(100, 100, 380, 440)
     settings_window = NSWindow.alloc().initWithContentRect_styleMask_backing_defer_(
@@ -40,7 +44,7 @@ def create_settings_window():
     current_config = load_config()
 
     # Store widgets for saving later
-    settings_window.settings_widgets = {}
+    widgets = {}
 
     # Start with simple text
     y_position = 380
@@ -58,7 +62,7 @@ def create_settings_window():
     active_color = hex_to_nscolor(current_config.get("colors", {}).get("glass_working", "#00d4ff"))
     color_well.setColor_(active_color)
     settings_window.contentView().addSubview_(color_well)
-    settings_window.settings_widgets['active_color'] = color_well
+    widgets['active_color'] = color_well
 
     y_position -= 50
 
@@ -68,7 +72,7 @@ def create_settings_window():
 
     idle_field = create_text_field(str(current_config.get("idle_threshold", 2)), 180, y_position, 60, 22)
     settings_window.contentView().addSubview_(idle_field)
-    settings_window.settings_widgets['idle_field'] = idle_field
+    widgets['idle_field'] = idle_field
 
     # Add unit selector dropdown
     unit_popup = NSPopUpButton.alloc().initWithFrame_(NSMakeRect(250, y_position - 2, 90, 26))
@@ -77,7 +81,7 @@ def create_settings_window():
     unit_popup.addItemWithTitle_("hours")
     unit_popup.selectItemAtIndex_(0)  # Default to seconds
     settings_window.contentView().addSubview_(unit_popup)
-    settings_window.settings_widgets['unit_popup'] = unit_popup
+    widgets['unit_popup'] = unit_popup
 
     # Make sure window doesn't use our delegate
     settings_window.setDelegate_(None)
@@ -85,4 +89,4 @@ def create_settings_window():
     # Set releasedWhenClosed to False to prevent crashes
     settings_window.setReleasedWhenClosed_(False)
 
-    return settings_window
+    return settings_window, widgets
