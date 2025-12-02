@@ -45,6 +45,7 @@ from Cocoa import (
     NSPopUpButton,
     NSStatusBar,
     NSVariableStatusItemLength,
+    NSImage,
 )
 from Foundation import NSObject, NSMutableArray, NSProcessInfo, NSDate
 import objc
@@ -532,8 +533,14 @@ class SithWindow(NSObject):
         status_bar = NSStatusBar.systemStatusBar()
         self.status_item = status_bar.statusItemWithLength_(NSVariableStatusItemLength)
 
-        # Set status bar icon (use a simple text icon)
-        self.status_item.setTitle_("⏱")
+        # Set status bar icon using SF Symbol
+        icon = NSImage.imageWithSystemSymbolName_accessibilityDescription_(
+            "clock.fill", "Work Clock Timer"
+        )
+        if icon and self.status_item.button():
+            # Make it a template image so it adapts to light/dark mode
+            icon.setTemplate_(True)
+            self.status_item.button().setImage_(icon)
 
         # Accessibility
         if self.status_item.button():
