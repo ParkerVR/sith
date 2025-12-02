@@ -43,6 +43,8 @@ from Cocoa import (
     NSTableColumn,
     NSBezelBorder,
     NSPopUpButton,
+    NSStatusBar,
+    NSVariableStatusItemLength,
 )
 from Foundation import NSObject, NSMutableArray, NSProcessInfo, NSDate
 import objc
@@ -142,6 +144,10 @@ class SithWindow(NSObject):
         self.summary_menu_item = None
         self.settings_menu_item = None
         self.guide_menu_item = None
+
+        # Status bar item (initially not created)
+        self.status_item = None
+        self.window_visible = True
 
         # Initialize today's entry if needed
         if self.today not in self.summary:
@@ -247,6 +253,16 @@ class SithWindow(NSObject):
         )
         reset_item.setTarget_(self)
         self.menu.addItem_(reset_item)
+
+        # Separator
+        self.menu.addItem_(NSMenuItem.separatorItem())
+
+        # Minimize to Status Bar menu item
+        minimize_item = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(
+            "Minimize to Status Bar", "minimizeToStatusBar:", ""
+        )
+        minimize_item.setTarget_(self)
+        self.menu.addItem_(minimize_item)
 
         # Separator
         self.menu.addItem_(NSMenuItem.separatorItem())
@@ -482,6 +498,56 @@ class SithWindow(NSObject):
     def quitApp_(self, sender):
         """Handle quit menu action."""
         self.on_close()
+
+    def minimizeToStatusBar_(self, sender):
+        """Hide window and show status bar icon."""
+        if not self.status_item:
+            self.create_status_bar_item()
+        self.window.orderOut_(None)
+        self.window_visible = False
+
+    def create_status_bar_item(self):
+        """Create status bar item with icon and menu."""
+        status_bar = NSStatusBar.systemStatusBar()
+        self.status_item = status_bar.statusItemWithLength_(NSVariableStatusItemLength)
+
+        # Set status bar icon (use a simple text icon)
+        self.status_item.setTitle_("⏱")
+
+        # Create menu for status bar item
+        status_menu = NSMenu.alloc().init()
+
+        # Show Window item
+        show_item = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(
+            "Show Window", "toggleWindowVisibility:", ""
+        )
+        show_item.setTarget_(self)
+        status_menu.addItem_(show_item)
+
+        # Separator
+        status_menu.addItem_(NSMenuItem.separatorItem())
+
+        # Quit item
+        quit_item = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(
+            "Quit", "quitApp:", "q"
+        )
+        quit_item.setTarget_(self)
+        status_menu.addItem_(quit_item)
+
+        self.status_item.setMenu_(status_menu)
+
+    def toggleWindowVisibility_(self, sender):
+        """Toggle window visibility from status bar."""
+        if self.window_visible:
+            self.window.orderOut_(None)
+            self.window_visible = False
+        else:
+            self.window.makeKeyAndOrderFront_(None)
+            self.window_visible = True
+            # Remove status bar item when showing window
+            if self.status_item:
+                NSStatusBar.systemStatusBar().removeStatusItem_(self.status_item)
+                self.status_item = None
 
     def toggleSummary_(self, sender):
         """Toggle work summary window (only one allowed)."""
