@@ -371,9 +371,8 @@ class SithWindow(NSObject):
         # NOTE: Timer uses custom colors (not semantic) as a core feature -
         # colors are user-configurable and change based on work state
         # Timer font is configurable in settings
-        # Position adjusts based on status bar visibility
-        # When hidden: centered vertically (accounting for text position within frame)
-        timer_y = 20 if not self.show_status_bar else 25
+        # Keep timer at same vertical position regardless of status bar visibility
+        timer_y = 20
         timer_rect = NSMakeRect(0, timer_y, WINDOW_WIDTH, 35)
         self.timer_label = NSTextField.alloc().initWithFrame_(timer_rect)
         self.timer_label.setStringValue_("00:00:00")
@@ -902,9 +901,8 @@ class SithWindow(NSObject):
         self.app_label.setHidden_(not self.show_status_bar)
         self.status_label.setHidden_(not self.show_status_bar)
 
-        # Adjust timer vertical position based on status bar visibility
-        # When hidden: lower position centers the text visually
-        timer_y = 20 if not self.show_status_bar else 25
+        # Keep timer at same vertical position regardless of status bar visibility
+        timer_y = 20
         self.timer_label.setFrame_(NSMakeRect(0, timer_y, WINDOW_WIDTH, 35))
 
         # Schedule label update on next timer tick instead of blocking here
