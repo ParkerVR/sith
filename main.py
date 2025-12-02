@@ -250,6 +250,14 @@ class WorkClockWindow(NSObject):
         allowed = app_name in ALLOWLIST
         is_idle = idle_seconds >= IDLE_THRESHOLD
 
+        # Track recently seen apps (for quick-add in settings)
+        if app_name != "(unknown)" and not hasattr(self, '_last_tracked_app'):
+            self._last_tracked_app = None
+
+        if app_name != "(unknown)" and app_name != self._last_tracked_app:
+            self._last_tracked_app = app_name
+            self.track_recent_app(app_name)
+
         # Working only if app allowed AND user not idle
         self.is_working = allowed and not is_idle
 
@@ -309,8 +317,32 @@ class WorkClockWindow(NSObject):
             import traceback
             traceback.print_exc()
 
+    def track_recent_app(self, app_name):
+        """Track recently seen app for quick-add suggestions."""
+        config_data = load_config()
+
+        # Initialize recent_apps list if not present
+        if "recent_apps" not in config_data:
+            config_data["recent_apps"] = []
+
+        recent = config_data["recent_apps"]
+
+        # Remove app if already in list (we'll re-add at front)
+        if app_name in recent:
+            recent.remove(app_name)
+
+        # Add to front of list
+        recent.insert(0, app_name)
+
+        # Keep only last 10 apps
+        config_data["recent_apps"] = recent[:10]
+
+        # Save to disk
+        CONFIG_PATH.write_text(json.dumps(config_data, indent=2))
+
     def reloadConfig(self):
         """Reload configuration and update display."""
+        print("reloadConfig: START")
         global config, ALLOWLIST, IDLE_THRESHOLD, GLASS_WORKING_COLOR, GLASS_INACTIVE_COLOR
 
         # Reload config from file
@@ -323,8 +355,9 @@ class WorkClockWindow(NSObject):
         print(f"Config reloaded: ALLOWLIST={ALLOWLIST}, IDLE_THRESHOLD={IDLE_THRESHOLD}")
         print(f"Colors: GLASS_WORKING_COLOR={GLASS_WORKING_COLOR}")
 
-        # Update label colors immediately
-        self.update_labels()
+        # Schedule label update on next timer tick instead of blocking here
+        # (update_labels will be called in the next timer cycle automatically)
+        print("reloadConfig: DONE - returning")
 
     def add_label(self, window, text, x, y, w, h, bold=False):
         """Helper to add a label to the window."""

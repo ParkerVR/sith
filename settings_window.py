@@ -155,15 +155,11 @@ class SettingsController(NSObject):
 
         y_position -= 30
 
-        # Get recent apps from summary (apps not in allowlist)
-        summary = load_summary()
-        recent_apps = set()
-        for day_data in summary.values():
-            if isinstance(day_data, dict) and "by_app" in day_data:
-                recent_apps.update(day_data["by_app"].keys())
+        # Get recently seen apps from config (not from summary)
+        recent_apps_all = self.config.get("recent_apps", [])
 
-        # Filter out apps already in allowlist
-        recent_apps = [app for app in recent_apps if app not in allowlist][:3]
+        # Filter out apps already in allowlist and take first 3
+        recent_apps = [app for app in recent_apps_all if app not in allowlist][:3]
 
         # Create buttons for recent apps
         x_pos = 20
@@ -215,7 +211,9 @@ class SettingsController(NSObject):
     @objc.IBAction
     def addApp_(self, sender):
         """Handle add app button click."""
+        print(f"addApp_ called! sender={sender}")
         app_name = sender.title()
+        print(f"Adding app: {app_name}")
 
         # Add to allowlist
         if "allowlist" not in self.config:
@@ -223,29 +221,40 @@ class SettingsController(NSObject):
 
         if app_name not in self.config["allowlist"]:
             self.config["allowlist"].append(app_name)
+            print(f"App added to config, now: {self.config['allowlist']}")
 
             # Save to file
+            print("BEFORE saveConfig()")
             self.saveConfig()
-            print(f"Added app: {app_name}")
+            print("AFTER saveConfig() - about to refresh")
 
             # Rebuild UI to show updated list
             self.refreshWindow()
+        else:
+            print(f"App {app_name} already in allowlist")
 
     @objc.IBAction
     def removeApp_(self, sender):
         """Handle remove app button click."""
+        print(f"removeApp_ called! sender={sender}")
         index = sender.tag()
+        print(f"Button tag (index): {index}")
 
         if "allowlist" in self.config and index < len(self.config["allowlist"]):
             app_name = self.config["allowlist"][index]
+            print(f"Removing app at index {index}: {app_name}")
             self.config["allowlist"].pop(index)
+            print(f"Allowlist after removal: {self.config['allowlist']}")
 
             # Save to file
             self.saveConfig()
-            print(f"Removed app: {app_name}")
+            print(f"Saved config after removing: {app_name}")
 
             # Rebuild UI to show updated list
+            print("About to refresh window...")
             self.refreshWindow()
+        else:
+            print(f"Invalid index {index} or no allowlist in config")
 
     def saveConfig(self):
         """Save the configuration to JSON file."""
@@ -253,11 +262,18 @@ class SettingsController(NSObject):
         print(f"Config saved to {CONFIG_PATH}")
 
         # Notify main app that settings changed
+        print(f"About to call callback, on_settings_changed={self.on_settings_changed}")
         if self.on_settings_changed:
+            print("Calling on_settings_changed callback...")
             self.on_settings_changed()
+            print("Callback completed, returning from saveConfig")
 
     def refreshWindow(self):
         """Refresh the window to show updated settings."""
+        # Reload config from disk first
+        self.config = load_config()
+        print(f"Refreshing window with allowlist: {self.config.get('allowlist', [])}")
+
         # Clear and rebuild the window content
         for view in list(self.window.contentView().subviews()):
             view.removeFromSuperview()
@@ -265,8 +281,12 @@ class SettingsController(NSObject):
         # Add glass effect back
         add_glass_effect(self.window)
 
-        # Rebuild UI
+        # Rebuild UI with fresh config
         self.buildUI()
+
+        # Force window to redisplay
+        self.window.display()
+        print("Window refreshed and displayed")
 
 
 def create_settings_controller():
