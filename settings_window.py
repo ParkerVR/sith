@@ -33,6 +33,7 @@ class SettingsController(NSObject):
         self.window = None
         self.widgets = {}
         self.config = load_config()
+        self.on_settings_changed = None  # Callback when settings change
 
         return self
 
@@ -250,6 +251,10 @@ class SettingsController(NSObject):
         """Save the configuration to JSON file."""
         CONFIG_PATH.write_text(json.dumps(self.config, indent=2))
         print(f"Config saved to {CONFIG_PATH}")
+
+        # Notify main app that settings changed
+        if self.on_settings_changed:
+            self.on_settings_changed()
 
     def refreshWindow(self):
         """Refresh the window to show updated settings."""

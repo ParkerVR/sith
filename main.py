@@ -305,6 +305,9 @@ class WorkClockWindow(NSObject):
             settings_controller = create_settings_controller()
             print(f"Settings controller created: {settings_controller}")
 
+            # Set callback to reload config when settings change
+            settings_controller.on_settings_changed = self.reloadConfig
+
             # Keep reference to prevent deallocation
             self.summary_windows.append(settings_controller)
             print("Settings window shown")
@@ -312,6 +315,23 @@ class WorkClockWindow(NSObject):
             print(f"Error creating settings window: {e}")
             import traceback
             traceback.print_exc()
+
+    def reloadConfig(self):
+        """Reload configuration and update display."""
+        global config, ALLOWLIST, IDLE_THRESHOLD, GLASS_WORKING_COLOR, GLASS_INACTIVE_COLOR
+
+        # Reload config from file
+        config = get_config()
+        ALLOWLIST = config.ALLOWLIST
+        IDLE_THRESHOLD = config.IDLE_THRESHOLD
+        GLASS_WORKING_COLOR = config.GLASS_WORKING_COLOR
+        GLASS_INACTIVE_COLOR = config.GLASS_INACTIVE_COLOR
+
+        print(f"Config reloaded: ALLOWLIST={ALLOWLIST}, IDLE_THRESHOLD={IDLE_THRESHOLD}")
+        print(f"Colors: GLASS_WORKING_COLOR={GLASS_WORKING_COLOR}")
+
+        # Update label colors immediately
+        self.update_labels()
 
     def showSettings_(self, sender):
         """Show settings window with native UI controls."""
