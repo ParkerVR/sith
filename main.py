@@ -31,10 +31,14 @@ from Cocoa import (
     NSButton,
     NSBezelStyleRounded,
     NSTextAlignmentCenter,
+    NSTextView,
+    NSScrollView,
+    NSMakeSize,
 )
 from Foundation import NSObject, NSMutableArray, NSProcessInfo
 import objc
 import setproctitle
+import json
 
 from utils import (
     get_frontmost_app_name,
@@ -45,6 +49,8 @@ from utils import (
     today_key,
     human_date,
     get_config,
+    load_config,
+    CONFIG_PATH,
 )
 
 # Load configuration from JSON
@@ -159,6 +165,13 @@ class WorkClockWindow(NSObject):
         )
         summary_item.setTarget_(self)
         self.menu.addItem_(summary_item)
+
+        # Settings menu item
+        settings_item = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(
+            "Settings", "showSettings:", ""
+        )
+        settings_item.setTarget_(self)
+        self.menu.addItem_(settings_item)
 
         # Separator
         self.menu.addItem_(NSMenuItem.separatorItem())
@@ -356,6 +369,157 @@ class WorkClockWindow(NSObject):
         # Keep reference to prevent deallocation and show window
         self.summary_windows.append(summary_window)
         summary_window.makeKeyAndOrderFront_(None)
+
+    def showSettings_(self, sender):
+        """Show settings window."""
+        # Create settings window
+        settings_rect = NSMakeRect(100, 100, 500, 400)
+        settings_window = NSWindow.alloc().initWithContentRect_styleMask_backing_defer_(
+            settings_rect,
+            NSWindowStyleMaskTitled | NSWindowStyleMaskClosable,
+            NSBackingStoreBuffered,
+            False,
+        )
+
+        # Configure window
+        settings_window.setTitle_("Settings")
+        settings_window.setLevel_(NSFloatingWindowLevel)
+        settings_window.setBackgroundColor_(NSColor.colorWithCalibratedWhite_alpha_(0.2, 0.95))
+
+        # Add glass effect
+        effect_view = NSVisualEffectView.alloc().initWithFrame_(
+            settings_window.contentView().bounds()
+        )
+        effect_view.setMaterial_(NSVisualEffectMaterialHUDWindow)
+        effect_view.setBlendingMode_(NSVisualEffectBlendingModeBehindWindow)
+        effect_view.setState_(1)
+        effect_view.setAutoresizingMask_(18)
+        settings_window.contentView().addSubview_(effect_view)
+
+        # Add title label
+        title_rect = NSMakeRect(20, 360, 460, 25)
+        title_label = NSTextField.alloc().initWithFrame_(title_rect)
+        title_label.setStringValue_("Configuration (config.json)")
+        title_label.setFont_(NSFont.fontWithName_size_("Menlo Bold", 12))
+        title_label.setTextColor_(NSColor.whiteColor())
+        title_label.setBackgroundColor_(NSColor.clearColor())
+        title_label.setBezeled_(False)
+        title_label.setDrawsBackground_(False)
+        title_label.setEditable_(False)
+        title_label.setSelectable_(False)
+        settings_window.contentView().addSubview_(title_label)
+
+        # Load current config
+        current_config = load_config()
+        config_text = json.dumps(current_config, indent=2)
+
+        # Create scrollable text view for config
+        scroll_rect = NSMakeRect(20, 60, 460, 290)
+        scroll_view = NSScrollView.alloc().initWithFrame_(scroll_rect)
+        scroll_view.setHasVerticalScroller_(True)
+        scroll_view.setHasHorizontalScroller_(False)
+        scroll_view.setAutohidesScrollers_(True)
+        scroll_view.setBorderType_(1)  # Line border
+
+        text_view = NSTextView.alloc().initWithFrame_(scroll_view.contentView().bounds())
+        text_view.setString_(config_text)
+        text_view.setFont_(NSFont.fontWithName_size_("Menlo", 11))
+        text_view.setTextColor_(NSColor.whiteColor())
+        text_view.setBackgroundColor_(NSColor.colorWithCalibratedWhite_alpha_(0.1, 0.9))
+        text_view.setEditable_(True)
+        text_view.setAutoresizingMask_(18)
+
+        scroll_view.setDocumentView_(text_view)
+        settings_window.contentView().addSubview_(scroll_view)
+
+        # Store reference to text view for saving
+        settings_window.config_text_view = text_view
+
+        # Add Save button
+        save_button = NSButton.alloc().initWithFrame_(NSMakeRect(360, 15, 120, 32))
+        save_button.setTitle_("Save & Restart")
+        save_button.setBezelStyle_(NSBezelStyleRounded)
+        save_button.setTarget_(self)
+        save_button.setAction_("saveSettings:")
+        settings_window.contentView().addSubview_(save_button)
+
+        # Add Cancel button
+        cancel_button = NSButton.alloc().initWithFrame_(NSMakeRect(230, 15, 120, 32))
+        cancel_button.setTitle_("Cancel")
+        cancel_button.setBezelStyle_(NSBezelStyleRounded)
+        cancel_button.setTarget_(self)
+        cancel_button.setAction_("cancelSettings:")
+        settings_window.contentView().addSubview_(cancel_button)
+
+        # Add info label
+        info_rect = NSMakeRect(20, 20, 200, 30)
+        info_label = NSTextField.alloc().initWithFrame_(info_rect)
+        info_label.setStringValue_("Edit JSON then click Save")
+        info_label.setFont_(NSFont.fontWithName_size_("Menlo", 9))
+        info_label.setTextColor_(NSColor.colorWithCalibratedWhite_alpha_(0.7, 1.0))
+        info_label.setBackgroundColor_(NSColor.clearColor())
+        info_label.setBezeled_(False)
+        info_label.setDrawsBackground_(False)
+        info_label.setEditable_(False)
+        info_label.setSelectable_(False)
+        settings_window.contentView().addSubview_(info_label)
+
+        # Store window reference
+        settings_window.setReleasedWhenClosed_(False)
+        settings_window.setDelegate_(None)
+        self.summary_windows.append(settings_window)
+        settings_window.makeKeyAndOrderFront_(None)
+
+    def saveSettings_(self, sender):
+        """Save settings from the settings window."""
+        # Find the settings window
+        for window in self.summary_windows:
+            if hasattr(window, 'config_text_view'):
+                text_view = window.config_text_view
+                new_config_text = str(text_view.string())
+
+                try:
+                    # Validate JSON
+                    new_config = json.loads(new_config_text)
+
+                    # Save to file
+                    CONFIG_PATH.write_text(json.dumps(new_config, indent=2))
+
+                    # Close window
+                    window.close()
+
+                    # Show restart message
+                    self.show_alert("Settings Saved", "Please restart the app for changes to take effect.")
+
+                except json.JSONDecodeError as e:
+                    # Show error
+                    self.show_alert("Invalid JSON", f"Could not save: {str(e)}")
+
+                break
+
+    def cancelSettings_(self, sender):
+        """Cancel settings editing."""
+        # Find and close the settings window
+        for window in self.summary_windows:
+            if hasattr(window, 'config_text_view'):
+                window.close()
+                break
+
+    def show_alert(self, title, message):
+        """Show an alert dialog."""
+        from Cocoa import NSAlert, NSAlertStyleInformational, NSAlertStyleWarning
+
+        alert = NSAlert.alloc().init()
+        alert.setMessageText_(title)
+        alert.setInformativeText_(message)
+
+        if "Invalid" in title or "Error" in title:
+            alert.setAlertStyle_(NSAlertStyleWarning)
+        else:
+            alert.setAlertStyle_(NSAlertStyleInformational)
+
+        alert.addButtonWithTitle_("OK")
+        alert.runModal()
 
     def windowShouldClose_(self, notification):
         """Handle window close - only for main window."""
