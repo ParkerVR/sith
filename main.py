@@ -276,7 +276,7 @@ class WorkClockWindow(NSObject):
         text_color = (
             hex_to_nscolor(GLASS_WORKING_COLOR)
             if self.is_working
-            else NSColor.whiteColor()
+            else hex_to_nscolor(GLASS_INACTIVE_COLOR)
         )
 
         self.timer_label.setStringValue_(format_seconds(self.worked_seconds))

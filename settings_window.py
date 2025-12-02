@@ -119,17 +119,31 @@ class SettingsController(NSObject):
 
         y_position += 40
 
-        # Color picker
+        # Active color picker
         label = create_label("Active text color:", 20, y_position, 150, 20)
         self.content_view.addSubview_(label)
 
-        color_well = NSColorWell.alloc().initWithFrame_(NSMakeRect(180, y_position, 60, 25))
+        active_color_well = NSColorWell.alloc().initWithFrame_(NSMakeRect(180, y_position, 60, 25))
         active_color = hex_to_nscolor(self.config.get("colors", {}).get("glass_working", "#00d4ff"))
-        color_well.setColor_(active_color)
-        color_well.setTarget_(self)
-        color_well.setAction_("colorChanged:")
-        self.content_view.addSubview_(color_well)
-        self.widgets['active_color'] = color_well
+        active_color_well.setColor_(active_color)
+        active_color_well.setTarget_(self)
+        active_color_well.setAction_("activeColorChanged:")
+        self.content_view.addSubview_(active_color_well)
+        self.widgets['active_color'] = active_color_well
+
+        y_position += 35
+
+        # Idle color picker
+        label = create_label("Idle text color:", 20, y_position, 150, 20)
+        self.content_view.addSubview_(label)
+
+        idle_color_well = NSColorWell.alloc().initWithFrame_(NSMakeRect(180, y_position, 60, 25))
+        idle_color = hex_to_nscolor(self.config.get("colors", {}).get("glass_inactive", "#ffffff"))
+        idle_color_well.setColor_(idle_color)
+        idle_color_well.setTarget_(self)
+        idle_color_well.setAction_("idleColorChanged:")
+        self.content_view.addSubview_(idle_color_well)
+        self.widgets['idle_color'] = idle_color_well
 
         y_position += 50
 
@@ -228,8 +242,8 @@ class SettingsController(NSObject):
         return y_position + 28
 
     @objc.IBAction
-    def colorChanged_(self, sender):
-        """Handle color picker change."""
+    def activeColorChanged_(self, sender):
+        """Handle active color picker change."""
         color = sender.color()
         hex_color = nscolor_to_hex(color)
 
@@ -237,6 +251,20 @@ class SettingsController(NSObject):
         if "colors" not in self.config:
             self.config["colors"] = {}
         self.config["colors"]["glass_working"] = hex_color
+
+        # Save to file
+        self.saveConfig()
+
+    @objc.IBAction
+    def idleColorChanged_(self, sender):
+        """Handle idle color picker change."""
+        color = sender.color()
+        hex_color = nscolor_to_hex(color)
+
+        # Update config
+        if "colors" not in self.config:
+            self.config["colors"] = {}
+        self.config["colors"]["glass_inactive"] = hex_color
 
         # Save to file
         self.saveConfig()
