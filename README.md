@@ -230,6 +230,14 @@ codesign --force --deep --sign - dist/Sith.app
 
 ---
 
+## Credit
+
+App is inspired [work.exe](https://neilblr.com/post/58757345346) by Neil Cicierega
+
+work.exe but MacOS and more
+
+---
+
 ## License
 
 Copyright © 2025 Parker Van Roy. All rights reserved.
