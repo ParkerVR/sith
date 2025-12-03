@@ -1,0 +1,8 @@
+# Requirements for icon generation scripts
+#
+# System dependency (install via Homebrew):
+#   brew install cairo pkg-config
+#
+# Python dependencies:
+cairosvg>=2.8.0
+Pillow>=12.0.0
