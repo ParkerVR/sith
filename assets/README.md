@@ -19,7 +19,9 @@ The status bar icons are simple, monochrome clock designs that work as template 
 The app icon features a gradient background (indigo to violet) with a white clock face showing 3:00.
 
 ### Regenerating Icons
-Run `python3 create_icons.py` to regenerate all icon files from the source code.
+If you don't have it, install pillow:
+`./venv/bin/python -m pip install pillow`
+Run `./venv/bin/python assets/create_icons.py` to regenerate all icon files from the source code.
 
 The script will:
 1. Create status bar icons at 1x and 2x resolutions
