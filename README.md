@@ -57,12 +57,9 @@ Sith is a minimalist time tracker that quietly sits in the corner of your screen
 
 ### Python Installation
 
-If you don't have Python 3.7+ installed:
+If you don't have Python 3.14+ installed:
 
 ```bash
-# Check if Python 3 is installed
-python3 --version
-
 # Install via Homebrew (recommended)
 brew install python@3.14
 
@@ -81,22 +78,16 @@ cd sith
 2. **Create virtual environment**
 
 ```bash
-python3 -m venv venv
+/opt/homebrew/bin/python3 -m venv venv
 ```
 
-3. **Activate virtual environment**
-
-```bash
-source venv/bin/activate
-```
-
-4. **Install dependencies**
+3. **Install dependencies**
 
 ```bash
 venv/bin/python -m pip install -r requirements.txt
 ```
 
-5. **Run the app (Development)**
+4. **Run the app (Development)**
 
 ```bash
 venv/bin/python main.py
