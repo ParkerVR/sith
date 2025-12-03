@@ -32,12 +32,10 @@ DEFAULT_CONFIG = {
     "time_display_style": "HH:MM:SS",  # Options: HH:MM:SS, HH:MM, Human Readable
     "timer_font_family": "Menlo",  # Options: SF Pro, SF Mono, Menlo (for timer display only)
     "colors": {
-        "working": "#0077ff",
-        "inactive": "#aa0000",
         "text": "#ffffff",
         # Glass colors with better contrast for readability
         # Bright cyan for active state - high contrast on dark glass
-        "glass_working": "#00d4ff",
+        "glass_working": "#0077ff",
         # White for idle state - ensures readability
         "glass_inactive": "#ffffff"
     },
@@ -110,9 +108,6 @@ def get_config():
         ALLOWLIST = set(config.get("allowlist", DEFAULT_CONFIG["allowlist"]))
         IDLE_THRESHOLD = config.get("idle_threshold", DEFAULT_CONFIG["idle_threshold"])
         TIMER_FONT_FAMILY = config.get("timer_font_family", DEFAULT_CONFIG["timer_font_family"])
-
-        WORKING_COLOR = config.get("colors", {}).get("working", DEFAULT_CONFIG["colors"]["working"])
-        INACTIVE_COLOR = config.get("colors", {}).get("inactive", DEFAULT_CONFIG["colors"]["inactive"])
         TEXT_COLOR = config.get("colors", {}).get("text", DEFAULT_CONFIG["colors"]["text"])
         GLASS_WORKING_COLOR = config.get("colors", {}).get("glass_working", DEFAULT_CONFIG["colors"]["glass_working"])
         GLASS_INACTIVE_COLOR = config.get("colors", {}).get("glass_inactive", DEFAULT_CONFIG["colors"]["glass_inactive"])

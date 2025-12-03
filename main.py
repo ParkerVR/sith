@@ -83,8 +83,6 @@ from settings_window import create_settings_controller
 config = get_config()
 ALLOWLIST = config.ALLOWLIST
 IDLE_THRESHOLD = config.IDLE_THRESHOLD
-WORKING_COLOR = config.WORKING_COLOR
-INACTIVE_COLOR = config.INACTIVE_COLOR
 TEXT_COLOR = config.TEXT_COLOR
 GLASS_WORKING_COLOR = config.GLASS_WORKING_COLOR
 GLASS_INACTIVE_COLOR = config.GLASS_INACTIVE_COLOR
