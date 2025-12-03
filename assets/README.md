@@ -21,13 +21,18 @@ The app icon features a gradient background (indigo to violet) with a white cloc
 ### Regenerating Icons
 Install requirements
 ```
-./venv/bin/python -m pip install -r assets/requirements.txt
+./venv/bin/python3.14 -m pip install -r assets/requirements.txt
+```
+
+Install dependency tools:
+```
+brew install cairo pkg-config
 ```
  
 Generate icons from SVG:
 
 ```
-./venv/bin/python assets/create_icons.py
+./venv/bin/python3.14 assets/create_icons.py
 ``` 
 to regenerate all icon files from the source code.
 
