@@ -83,8 +83,6 @@ from settings_window import create_settings_controller
 config = get_config()
 ALLOWLIST = config.ALLOWLIST
 IDLE_THRESHOLD = config.IDLE_THRESHOLD
-WORKING_COLOR = config.WORKING_COLOR
-INACTIVE_COLOR = config.INACTIVE_COLOR
 TEXT_COLOR = config.TEXT_COLOR
 GLASS_WORKING_COLOR = config.GLASS_WORKING_COLOR
 GLASS_INACTIVE_COLOR = config.GLASS_INACTIVE_COLOR
@@ -98,6 +96,8 @@ UPDATE_INTERVAL = config.UPDATE_INTERVAL
 LABEL_MARGIN_X = 8  # Horizontal margin from edges for bottom labels
 LABEL_MARGIN_Y = 8  # Vertical margin from bottom for bottom labels
 STATUS_LABEL_WIDTH = 52  # Width of status label
+
+TIMER_FONT_SIZE = 30
 
 
 class WindowDelegate(NSObject):
@@ -369,6 +369,7 @@ class SithWindow(NSObject):
         """Create text labels for timer, app name, and status."""
         content_view = self.window.contentView()
 
+
         # Timer label (large, centered)
         # NOTE: Timer uses custom colors (not semantic) as a core feature -
         # colors are user-configurable and change based on work state
@@ -378,7 +379,7 @@ class SithWindow(NSObject):
         timer_rect = NSMakeRect(0, timer_y, WINDOW_WIDTH, 35)
         self.timer_label = NSTextField.alloc().initWithFrame_(timer_rect)
         self.timer_label.setStringValue_("00:00:00")
-        self.timer_label.setFont_(get_font(self.timer_font_family, 20, bold=True))
+        self.timer_label.setFont_(get_font(self.timer_font_family, TIMER_FONT_SIZE, bold=True))
         # Initial color - will be updated by updateTimer_ based on work state
         self.timer_label.setTextColor_(NSColor.whiteColor())
         self.timer_label.setBackgroundColor_(NSColor.clearColor())
@@ -883,7 +884,7 @@ class SithWindow(NSObject):
 
         # Update fonts immediately
         # Timer uses configurable font, UI elements always use SF Pro
-        self.timer_label.setFont_(get_font(self.timer_font_family, 20, bold=True))
+        self.timer_label.setFont_(get_font(self.timer_font_family, TIMER_FONT_SIZE, bold=True))
         self.app_label.setFont_(get_font("SF Pro", 9, bold=False))
         self.status_label.setFont_(get_font("SF Pro", 9, bold=True))
 

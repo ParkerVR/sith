@@ -1,67 +1,52 @@
 #!/usr/bin/env python3
 """
-Script to create macOS icons using Pillow.
-Creates PNG images for the status bar icon and an iconset for the app icon.
+Script to create macOS icons from SVG files.
+Converts SVG images to PNG at various sizes for status bar and app icons.
 """
 
-from PIL import Image, ImageDraw
+from PIL import Image
+import cairosvg
 import os
+import io
 
-def create_statusbar_icon(size):
-    """Create a simple clock icon for the status bar."""
-    img = Image.new('RGBA', (size, size), (0, 0, 0, 0))
-    draw = ImageDraw.Draw(img)
+# Get the directory where this script is located
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+STATUSBAR_SVG = os.path.join(SCRIPT_DIR, 'statusbar_icon.svg')
+APP_ICON_SVG = os.path.join(SCRIPT_DIR, 'app_icon.svg')
 
-    # Calculate dimensions
-    center = size // 2
-    radius = int(size * 0.42)
-    stroke_width = max(1, size // 12)
-
-    # Draw clock circle
-    draw.ellipse(
-        [center - radius, center - radius, center + radius, center + radius],
-        outline=(0, 0, 0, 255),
-        width=stroke_width
+def svg_to_png(svg_path, size):
+    """Convert SVG file to PNG at the specified size and return as PIL Image."""
+    # Convert SVG to PNG bytes using cairosvg
+    png_data = cairosvg.svg2png(
+        url=svg_path,
+        output_width=size,
+        output_height=size
     )
 
-    # Draw hour hand (pointing up)
-    hand_length = int(radius * 0.5)
-    draw.line(
-        [(center, center), (center, center - hand_length)],
-        fill=(0, 0, 0, 255),
-        width=stroke_width
-    )
-
-    # Draw minute hand (pointing right)
-    hand_length = int(radius * 0.65)
-    draw.line(
-        [(center, center), (center + hand_length, center)],
-        fill=(0, 0, 0, 255),
-        width=stroke_width
-    )
-
-    # Draw center dot
-    dot_radius = max(1, size // 18)
-    draw.ellipse(
-        [center - dot_radius, center - dot_radius,
-         center + dot_radius, center + dot_radius],
-        fill=(0, 0, 0, 255)
-    )
-
+    # Load PNG data into PIL Image
+    img = Image.open(io.BytesIO(png_data))
     return img
 
+def create_statusbar_icon(size):
+    """Create status bar icon from SVG at the specified size."""
+    return svg_to_png(STATUSBAR_SVG, size)
+
 def create_app_icon(size):
-    """Create a colorful clock icon for the app."""
+    """Create app icon from SVG at the specified size."""
+    # For the app icon, we need to add the colorful background and styling
+    # Load the base clock SVG
+    clock_img = svg_to_png(APP_ICON_SVG, size)
+
+    # Create a new image with gradient background
     img = Image.new('RGBA', (size, size), (0, 0, 0, 0))
+    from PIL import ImageDraw
     draw = ImageDraw.Draw(img)
 
     # Calculate dimensions
-    center = size // 2
     corner_radius = int(size * 0.22)  # macOS icon corner radius
 
-    # Draw rounded rectangle background with gradient-like effect
-    # Top color: #6366f1 (indigo)
-    # Bottom color: #8b5cf6 (violet)
+    # Draw rounded rectangle background with gradient effect
+    # Top color: #6366f1 (indigo), Bottom color: #8b5cf6 (violet)
     for y in range(size):
         ratio = y / size
         r = int(99 + (139 - 99) * ratio)
@@ -69,7 +54,7 @@ def create_app_icon(size):
         b = int(241 + (246 - 241) * ratio)
         draw.line([(0, y), (size, y)], fill=(r, g, b, 255))
 
-    # Create rounded corners by drawing over them
+    # Create rounded corners mask
     mask = Image.new('L', (size, size), 0)
     mask_draw = ImageDraw.Draw(mask)
     mask_draw.rounded_rectangle(
@@ -78,76 +63,19 @@ def create_app_icon(size):
         fill=255
     )
 
-    # Apply mask
+    # Apply mask to background
     img.putalpha(mask)
 
-    # Draw clock face (white circle)
-    clock_radius = int(size * 0.33)
-    shadow_offset = max(1, size // 128)
+    # Resize and center the clock icon
+    icon_size = int(size * 0.6)  # Clock takes up 60% of the icon
+    clock_resized = clock_img.resize((icon_size, icon_size), Image.Resampling.LANCZOS)
 
-    # Shadow
-    draw.ellipse(
-        [center - clock_radius + shadow_offset,
-         center - clock_radius + shadow_offset,
-         center + clock_radius + shadow_offset,
-         center + clock_radius + shadow_offset],
-        fill=(0, 0, 0, 30)
-    )
+    # Calculate position to center the clock
+    x = (size - icon_size) // 2
+    y = (size - icon_size) // 2
 
-    # Clock face
-    draw.ellipse(
-        [center - clock_radius, center - clock_radius,
-         center + clock_radius, center + clock_radius],
-        fill=(255, 255, 255, 242)
-    )
-
-    # Draw hour markers
-    marker_radius = max(2, size // 64)
-    positions = [
-        (center, center - clock_radius + marker_radius * 3),  # 12
-        (center, center + clock_radius - marker_radius * 3),  # 6
-        (center - clock_radius + marker_radius * 3, center),  # 9
-        (center + clock_radius - marker_radius * 3, center),  # 3
-    ]
-    for x, y in positions:
-        draw.ellipse(
-            [x - marker_radius, y - marker_radius,
-             x + marker_radius, y + marker_radius],
-            fill=(99, 102, 241, 255)
-        )
-
-    # Draw hour hand (pointing up)
-    hand_width = max(2, size // 43)
-    hand_length = int(clock_radius * 0.55)
-    draw.line(
-        [(center, center), (center, center - hand_length)],
-        fill=(99, 102, 241, 255),
-        width=hand_width
-    )
-
-    # Draw minute hand (pointing right)
-    hand_width = max(2, size // 51)
-    hand_length = int(clock_radius * 0.75)
-    draw.line(
-        [(center, center), (center + hand_length, center)],
-        fill=(139, 92, 246, 255),
-        width=hand_width
-    )
-
-    # Draw center dot
-    dot_radius = max(2, size // 37)
-    draw.ellipse(
-        [center - dot_radius, center - dot_radius,
-         center + dot_radius, center + dot_radius],
-        fill=(99, 102, 241, 255)
-    )
-
-    inner_dot = max(1, size // 64)
-    draw.ellipse(
-        [center - inner_dot, center - inner_dot,
-         center + inner_dot, center + inner_dot],
-        fill=(255, 255, 255, 255)
-    )
+    # Composite the clock onto the background
+    img.paste(clock_resized, (x, y), clock_resized)
 
     return img
 
@@ -188,3 +116,13 @@ for size, filename in sizes:
 
 print(f"\nIconset created at {iconset_dir}/")
 print("Converting to .icns format...")
+
+# Convert iconset to .icns using macOS iconutil
+import subprocess
+icns_path = "AppIcon.icns"
+try:
+    subprocess.run(['iconutil', '-c', 'icns', iconset_dir, '-o', icns_path], check=True)
+    print(f"✓ App icon created: {icns_path}")
+except subprocess.CalledProcessError as e:
+    print(f"✗ Failed to create .icns file: {e}")
+    exit(1)

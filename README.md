@@ -84,13 +84,13 @@ cd sith
 3. **Install dependencies**
 
 ```bash
-venv/bin/python -m pip install -r requirements.txt
+venv/bin/python3.14 -m pip install -r requirements.txt
 ```
 
 4. **Run the app (Development)**
 
 ```bash
-venv/bin/python main.py
+venv/bin/python3.14 main.py
 ```
 
 The app will launch!
@@ -131,12 +131,17 @@ The app will launch!
 
 To create a standalone `.app` bundle:
 
+Install setuptools:
+```bash
+./venv/bin/python3.14 -m pip install -r dist_requirements.txt
+```
+
 ```bash
 # Clean build
 rm -rf build dist
 
 # Build with py2app
-./venv/bin/python setup.py py2app
+./venv/bin/python3.14 setup.py py2app
 
 # Sign the app (required for macOS)
 codesign --force --deep --sign - dist/Sith.app
@@ -222,6 +227,14 @@ codesign --force --deep --sign - dist/Sith.app
 ### Timer not tracking?
 - Make sure your app is in the allowlist (Settings)
 - Check that you're not idle (move mouse to reset)
+
+---
+
+## Credit
+
+App is inspired [work.exe](https://neilblr.com/post/58757345346) by Neil Cicierega
+
+work.exe but MacOS and more
 
 ---
 
