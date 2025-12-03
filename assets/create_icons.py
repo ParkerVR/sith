@@ -116,3 +116,13 @@ for size, filename in sizes:
 
 print(f"\nIconset created at {iconset_dir}/")
 print("Converting to .icns format...")
+
+# Convert iconset to .icns using macOS iconutil
+import subprocess
+icns_path = "AppIcon.icns"
+try:
+    subprocess.run(['iconutil', '-c', 'icns', iconset_dir, '-o', icns_path], check=True)
+    print(f"✓ App icon created: {icns_path}")
+except subprocess.CalledProcessError as e:
+    print(f"✗ Failed to create .icns file: {e}")
+    exit(1)
