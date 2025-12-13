@@ -11,8 +11,12 @@ import io
 
 # Get the directory where this script is located
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+OUTPUT_DIR = os.path.join(SCRIPT_DIR, 'generated')
 STATUSBAR_SVG = os.path.join(SCRIPT_DIR, 'statusbar_icon.svg')
 APP_ICON_SVG = os.path.join(SCRIPT_DIR, 'app_icon.svg')
+
+# Create output directory if it doesn't exist
+os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 def svg_to_png(svg_path, size):
     """Convert SVG file to PNG at the specified size and return as PIL Image."""
@@ -82,16 +86,16 @@ def create_app_icon(size):
 # Create status bar icons
 print("Creating status bar icons...")
 statusbar_1x = create_statusbar_icon(18)
-statusbar_1x.save('statusbar_icon.png')
+statusbar_1x.save(os.path.join(OUTPUT_DIR, 'statusbar_icon.png'))
 
 statusbar_2x = create_statusbar_icon(36)
-statusbar_2x.save('statusbar_icon@2x.png')
+statusbar_2x.save(os.path.join(OUTPUT_DIR, 'statusbar_icon@2x.png'))
 
-print("Status bar icons created: statusbar_icon.png, statusbar_icon@2x.png")
+print(f"Status bar icons created in {OUTPUT_DIR}/")
 
 # Create app icon iconset
 print("\nCreating app icon iconset...")
-iconset_dir = "AppIcon.iconset"
+iconset_dir = os.path.join(OUTPUT_DIR, "AppIcon.iconset")
 os.makedirs(iconset_dir, exist_ok=True)
 
 # Required sizes for macOS app icons
@@ -119,7 +123,7 @@ print("Converting to .icns format...")
 
 # Convert iconset to .icns using macOS iconutil
 import subprocess
-icns_path = "AppIcon.icns"
+icns_path = os.path.join(OUTPUT_DIR, "AppIcon.icns")
 try:
     subprocess.run(['iconutil', '-c', 'icns', iconset_dir, '-o', icns_path], check=True)
     print(f"✓ App icon created: {icns_path}")

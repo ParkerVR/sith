@@ -2,44 +2,49 @@
 
 This directory contains all the icon and image assets for the Sith time tracking app.
 
-## Files
+## Source Files (Required)
 
-### Status Bar Icon
+These are the only files you need to edit:
+
+- **statusbar_icon.svg** - Source SVG for the status bar icon
+- **app_icon.svg** - Source SVG for the app icon
+
+## Generated Files (Do Not Edit)
+
+All files in the `./generated/` directory are automatically created by the build script:
+
+### Status Bar Icons
 - **statusbar_icon.png** - 18x18px icon for the macOS status bar (1x resolution)
 - **statusbar_icon@2x.png** - 36x36px icon for the macOS status bar (2x resolution)
-- **statusbar_icon.svg** - Source SVG for the status bar icon
 
 The status bar icons are simple, monochrome clock designs that work as template images. They automatically adapt to light/dark mode.
 
-### App Icon
+### App Icons
 - **AppIcon.icns** - macOS app icon bundle (all resolutions)
 - **AppIcon.iconset/** - Directory containing all individual PNG sizes for the app icon
-- **app_icon.svg** - Source SVG for the app icon
 
 The app icon features a gradient background (indigo to violet) with a white clock face showing 3:00.
 
-### Regenerating Icons
-Install requirements
-```
-./venv/bin/python3.14 -m pip install -r assets/requirements.txt
-```
+## Regenerating Icons
 
-Install dependency tools:
-```
-brew install cairo pkg-config
-```
- 
-Generate icons from SVG:
+After editing the source SVG files, regenerate all icons with:
 
-```
-./venv/bin/python3.14 assets/create_icons.py
-``` 
-to regenerate all icon files from the source code.
+1. **Install dependencies** (first time only):
+   ```bash
+   brew install cairo pkg-config
+   ./venv/bin/python3.14 -m pip install -r assets/requirements.txt
+   ```
 
-The script will:
-1. Create status bar icons at 1x and 2x resolutions
-2. Generate all required app icon sizes in the iconset
-3. Convert the iconset to .icns format using `iconutil`
+2. **Generate icons**:
+   ```bash
+   ./venv/bin/python3.14 assets/create_icons.py
+   ```
+
+The script will automatically:
+1. Create the `./generated/` directory
+2. Generate status bar icons at 1x and 2x resolutions
+3. Create all required app icon sizes in the iconset
+4. Convert the iconset to .icns format using `iconutil`
 
 ## Design Notes
 
@@ -49,9 +54,9 @@ The script will:
 
 ## Customization
 
-To customize the icons, you can either:
-1. Edit the SVG files directly
-2. Modify the `create_icons.py` script to change colors, sizes, or design elements
-3. Replace the PNG/ICNS files with your own designs
+To customize the icons:
+1. **Edit the source SVG files** (`statusbar_icon.svg` or `app_icon.svg`)
+2. **Modify the `create_icons.py` script** to change colors, gradients, or design elements
+3. **Run the generation script** to create updated icons
 
 Make sure to keep the status bar icon simple and legible at small sizes (18x18px).
