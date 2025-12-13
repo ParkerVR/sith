@@ -37,50 +37,9 @@ def create_statusbar_icon(size):
 
 def create_app_icon(size):
     """Create app icon from SVG at the specified size."""
-    # For the app icon, we need to add the colorful background and styling
-    # Load the base clock SVG
-    clock_img = svg_to_png(APP_ICON_SVG, size)
-
-    # Create a new image with gradient background
-    img = Image.new('RGBA', (size, size), (0, 0, 0, 0))
-    draw = ImageDraw.Draw(img)
-
-    # Calculate dimensions
-    corner_radius = int(size * 0.22)  # macOS icon corner radius
-
-    # Draw rounded rectangle background with gradient effect
-    # Top color: #6366f1 (indigo), Bottom color: #8b5cf6 (violet)
-    for y in range(size):
-        ratio = y / size
-        r = int(99 + (139 - 99) * ratio)
-        g = int(102 + (92 - 102) * ratio)
-        b = int(241 + (246 - 241) * ratio)
-        draw.line([(0, y), (size, y)], fill=(r, g, b, 255))
-
-    # Create rounded corners mask
-    mask = Image.new('L', (size, size), 0)
-    mask_draw = ImageDraw.Draw(mask)
-    mask_draw.rounded_rectangle(
-        [(0, 0), (size, size)],
-        radius=corner_radius,
-        fill=255
-    )
-
-    # Apply mask to background
-    img.putalpha(mask)
-
-    # Resize and center the clock icon
-    icon_size = int(size * 0.6)  # Clock takes up 60% of the icon
-    clock_resized = clock_img.resize((icon_size, icon_size), Image.Resampling.LANCZOS)
-
-    # Calculate position to center the clock
-    x = (size - icon_size) // 2
-    y = (size - icon_size) // 2
-
-    # Composite the clock onto the background
-    img.paste(clock_resized, (x, y), clock_resized)
-
-    return img
+    # The SVG already contains the full app icon with gradient background
+    # and rounded corners, so just convert it directly
+    return svg_to_png(APP_ICON_SVG, size)
 
 # Create status bar icons
 print("Creating status bar icons...")
