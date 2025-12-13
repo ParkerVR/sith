@@ -146,11 +146,14 @@ rm -rf build dist
 # Sign the app (required for macOS)
 codesign --force --deep --sign - dist/Sith.app
 
+# Create fancy DMG installer for distribution (optional)
+./create_dmg.sh
+
 # Run the built app
 open dist/Sith.app
 ```
 
-The app will be in `dist/Sith.app` and can be moved to your Applications folder.
+The app will be in `dist/Sith.app` and can be moved to your Applications folder. For distribution, use `dist/Sith.dmg`.
 
 For detailed build and distribution instructions, see [DISTRIBUTION.md](DISTRIBUTION.md).
 
