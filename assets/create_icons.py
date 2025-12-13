@@ -103,4 +103,25 @@ app_icon_1024_rgb.paste(app_icon_1024, (0, 0), app_icon_1024)
 app_icon_1024_rgb.save(os.path.join(appstore_dir, 'app_icon_1024.png'))
 
 print(f"\n✓ App Store assets created in {appstore_dir}/")
-print("Note: Screenshots should be placed in assets/screenshots/")
+
+# Copy screenshots from assets/screenshots/ if they exist
+screenshots_dir = os.path.join(SCRIPT_DIR, "screenshots")
+if os.path.exists(screenshots_dir):
+    print("\nCopying screenshots to App Store directory...")
+    screenshot_mapping = {
+        "app.png": "screenshot_main_2560x1600.png",
+        "settings.png": "screenshot_settings_2560x1600.png"
+    }
+
+    import shutil
+    for source_name, dest_name in screenshot_mapping.items():
+        source_path = os.path.join(screenshots_dir, source_name)
+        if os.path.exists(source_path):
+            dest_path = os.path.join(appstore_dir, dest_name)
+            shutil.copy2(source_path, dest_path)
+            print(f"  Copied {source_name} → {dest_name}")
+        else:
+            print(f"  ⚠ {source_name} not found, skipping...")
+    print(f"✓ Screenshots copied to {appstore_dir}/")
+else:
+    print("\nNote: Screenshots should be placed in assets/screenshots/")

@@ -21,11 +21,11 @@ A minimal macOS time tracker that helps you understand where your time goes.
 ## Screenshots
 
 <div align="center">
-<img src="assets/screenshots/screenshot_2560x1600.png" width="800" alt="Sith Timer Window">
+<img src="assets/screenshots/app.png" width="800" alt="Sith Timer Window">
 <br>
 <em>Clean, floating timer that stays out of your way</em>
 <br><br>
-<img src="assets/screenshots/screenshot_settings_2560x1600.png" width="800" alt="Sith Settings">
+<img src="assets/screenshots/settings.png" width="800" alt="Sith Settings">
 <br>
 <em>Simple settings to customize your tracking experience</em>
 </div>
