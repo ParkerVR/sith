@@ -6,12 +6,12 @@ from setuptools import setup
 
 APP = ['main.py']
 DATA_FILES = [
-    ('assets', ['assets/statusbar_icon.png', 'assets/statusbar_icon@2x.png']),
+    ('assets', ['assets/generated/statusbar_icon.png', 'assets/generated/statusbar_icon@2x.png']),
     ('', ['GUIDE.md'])  # Include guide in Resources root
 ]
 OPTIONS = {
     'argv_emulation': False,
-    'iconfile': 'assets/AppIcon.icns',
+    'iconfile': 'assets/generated/AppIcon.icns',
     'plist': {
         'CFBundleName': 'Sith',
         'CFBundleDisplayName': 'Sith',

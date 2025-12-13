@@ -14,16 +14,21 @@ These are the only files you need to edit:
 All files in the `./generated/` directory are automatically created by the build script:
 
 ### Status Bar Icons
-- **statusbar_icon.png** - 18x18px icon for the macOS status bar (1x resolution)
-- **statusbar_icon@2x.png** - 36x36px icon for the macOS status bar (2x resolution)
+- **generated/statusbar_icon.png** - 18x18px icon for the macOS status bar (1x resolution)
+- **generated/statusbar_icon@2x.png** - 36x36px icon for the macOS status bar (2x resolution)
 
 The status bar icons are simple, monochrome clock designs that work as template images. They automatically adapt to light/dark mode.
 
 ### App Icons
-- **AppIcon.icns** - macOS app icon bundle (all resolutions)
-- **AppIcon.iconset/** - Directory containing all individual PNG sizes for the app icon
+- **generated/AppIcon.icns** - macOS app icon bundle (all resolutions)
+- **generated/AppIcon.iconset/** - Directory containing all individual PNG sizes for the app icon
 
 The app icon features a gradient background (indigo to violet) with a white clock face showing 3:00.
+
+### App Store Assets
+- **generated/appstore/app_icon_1024.png** - 1024x1024px app icon for App Store (RGB format, no alpha channel)
+
+Note: Screenshots should be placed manually in `assets/screenshots/` directory.
 
 ## Regenerating Icons
 
@@ -41,10 +46,11 @@ After editing the source SVG files, regenerate all icons with:
    ```
 
 The script will automatically:
-1. Create the `./generated/` directory
+1. Create the `./generated/` directory structure
 2. Generate status bar icons at 1x and 2x resolutions
 3. Create all required app icon sizes in the iconset
 4. Convert the iconset to .icns format using `iconutil`
+5. Generate App Store marketing assets (1024x1024 app icon)
 
 ## Design Notes
 

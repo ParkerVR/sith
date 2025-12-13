@@ -4,7 +4,7 @@ Script to create macOS icons from SVG files.
 Converts SVG images to PNG at various sizes for status bar and app icons.
 """
 
-from PIL import Image
+from PIL import Image, ImageDraw
 import cairosvg
 import os
 import io
@@ -43,7 +43,6 @@ def create_app_icon(size):
 
     # Create a new image with gradient background
     img = Image.new('RGBA', (size, size), (0, 0, 0, 0))
-    from PIL import ImageDraw
     draw = ImageDraw.Draw(img)
 
     # Calculate dimensions
@@ -130,3 +129,19 @@ try:
 except subprocess.CalledProcessError as e:
     print(f"✗ Failed to create .icns file: {e}")
     exit(1)
+
+# Create App Store marketing assets
+print("\nCreating App Store marketing assets...")
+appstore_dir = os.path.join(OUTPUT_DIR, "appstore")
+os.makedirs(appstore_dir, exist_ok=True)
+
+# 1024x1024 app icon for App Store (no rounded corners, no alpha)
+print("  Creating app_icon_1024.png (1024x1024)...")
+app_icon_1024 = create_app_icon(1024)
+# Convert to RGB (remove alpha) for App Store
+app_icon_1024_rgb = Image.new('RGB', (1024, 1024), (255, 255, 255))
+app_icon_1024_rgb.paste(app_icon_1024, (0, 0), app_icon_1024)
+app_icon_1024_rgb.save(os.path.join(appstore_dir, 'app_icon_1024.png'))
+
+print(f"\n✓ App Store assets created in {appstore_dir}/")
+print("Note: Screenshots should be placed in assets/screenshots/")

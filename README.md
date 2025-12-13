@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="assets/appstore/app_icon_1024.png" width="200" alt="Sith App Icon">
+<img src="assets/generated/appstore/app_icon_1024.png" width="200" alt="Sith App Icon">
 
 # Sith
 
@@ -21,11 +21,11 @@ A minimal macOS time tracker that helps you understand where your time goes.
 ## Screenshots
 
 <div align="center">
-<img src="assets/appstore/screenshot_2560x1600.png" width="800" alt="Sith Timer Window">
+<img src="assets/screenshots/screenshot_2560x1600.png" width="800" alt="Sith Timer Window">
 <br>
 <em>Clean, floating timer that stays out of your way</em>
 <br><br>
-<img src="assets/appstore/screenshot_settings_2560x1600.png" width="800" alt="Sith Settings">
+<img src="assets/screenshots/screenshot_settings_2560x1600.png" width="800" alt="Sith Settings">
 <br>
 <em>Simple settings to customize your tracking experience</em>
 </div>
@@ -189,7 +189,7 @@ No data is sent to any server. No analytics. No tracking. Just local time tracki
 
 - **[GUIDE.md](GUIDE.md)** - Complete user guide (also available in-app)
 - **[DISTRIBUTION.md](DISTRIBUTION.md)** - Building, signing, and distributing
-- **[assets/appstore/README.md](assets/appstore/README.md)** - App Store assets guide
+- **[assets/README.md](assets/README.md)** - Icon and asset generation guide
 
 ---
 

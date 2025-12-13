@@ -228,13 +228,12 @@ For Mac App Store distribution (optional - more restrictive than direct distribu
    - Bundle ID: `com.parkervanroy.sith`
    - Category: Productivity
 
-3. **Marketing Assets** (✅ Already created in `assets/appstore/`)
-   - **App Icon:** `app_icon_1024.png` (1024x1024, no rounded corners)
-   - **Screenshots:** Multiple sizes provided (1280x800 up to 2880x1800)
+3. **Marketing Assets**
+   - **App Icon:** Generated at `assets/generated/appstore/app_icon_1024.png` (1024x1024, RGB format)
+   - **Screenshots:** Place actual screenshots in `assets/screenshots/`
      - Main timer window
      - Settings interface
-   - **Hero Image:** For website/marketing use
-   - See `assets/appstore/README.md` for complete asset guide
+   - See `assets/README.md` for icon generation guide
 
 ### Submission Process
 
