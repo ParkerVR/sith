@@ -15,15 +15,15 @@ OPTIONS = {
     'plist': {
         'CFBundleName': 'Sith',
         'CFBundleDisplayName': 'Sith',
-        'CFBundleIdentifier': 'com.parkervanroy.sith',
+        'CFBundleIdentifier': 'com.parkervr.sith',
         'CFBundleVersion': '1.0.0',
         'CFBundleShortVersionString': '1.0.0',
         'LSUIElement': True,  # Makes it a menubar/background app (no dock icon)
         'NSHighResolutionCapable': True,
         # Privacy strings required for App Store
         'NSAppleEventsUsageDescription': 'Sith needs to know which app you\'re using to track your work time accurately.',
-        # App Store metadata
-        'LSMinimumSystemVersion': '10.15.0',
+        # App Store metadata (12.0+ required for arm64-only builds)
+        'LSMinimumSystemVersion': '12.0.0',
         'LSApplicationCategoryType': 'public.app-category.productivity',
         'NSHumanReadableCopyright': 'Copyright © 2025 Parker Van Roy. All rights reserved.',
     },
