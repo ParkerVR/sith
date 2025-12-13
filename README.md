@@ -14,6 +14,8 @@ A minimal macOS time tracker that helps you understand where your time goes.
 [![Python](https://img.shields.io/badge/Python-3.7+-green.svg)](https://www.python.org/)
 [![License](https://img.shields.io/badge/License-MIT-orange.svg)](LICENSE)
 
+**[Download Sith v1.0.0](https://github.com/ParkerVR/sith/releases/download/v1.0.0/Sith.dmg)**
+
 </div>
 
 ---
@@ -249,6 +251,6 @@ Copyright © 2025 Parker Van Roy. All rights reserved.
 
 <div align="center">
 
-**[Download](dist/)** • **[Documentation](GUIDE.md)** • **[Report Bug](issues/)**
+**[Documentation](GUIDE.md)** • **[Report Bug](issues/)**
 
 </div>
